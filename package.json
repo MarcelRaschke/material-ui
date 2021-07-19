@@ -68,7 +68,7 @@
     "@babel/register": "^7.10.1",
     "@emotion/react": "^11.0.0",
     "@emotion/styled": "^11.0.0",
-    "@rollup/plugin-replace": "^2.3.1",
+    "@rollup/plugin-replace": "^3.0.0",
     "@testing-library/dom": "^7.22.1",
     "@testing-library/react": "^11.0.2",
     "@testing-library/react-hooks": "3.7.0",
