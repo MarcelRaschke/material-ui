@@ -1,16 +1,8 @@
 import * as React from 'react';
-import { Omit } from '@material-ui/types';
+import { DistributiveOmit } from '@material-ui/types';
 import { StyledComponentProps } from './styles';
 
 export { StyledComponentProps };
-
-/**
- * @deprecated
- * Import from `@material-ui/types` instead
- *
- * TODO: to remove in v5
- */
-export { Omit };
 
 /**
  * All standard components exposed by `material-ui` are `StyledComponents` with
@@ -18,10 +10,11 @@ export { Omit };
  * `style`.
  * @deprecated will be removed in v5 for internal usage only
  */
-export type StandardProps<C, ClassKey extends string, Removals extends keyof C = never> = Omit<
+export type StandardProps<
   C,
-  'classes' | Removals
-> &
+  ClassKey extends string,
+  Removals extends keyof C = never,
+> = DistributiveOmit<C, 'classes' | Removals> &
   StyledComponentProps<ClassKey> & {
     className?: string;
     ref?: C extends { ref?: infer RefType } ? RefType : React.Ref<unknown>;
@@ -31,15 +24,15 @@ export type StandardProps<C, ClassKey extends string, Removals extends keyof C =
 /**
  * @private ONLY USE FROM WITHIN mui-org/material-ui
  *
- * Internal helper type for conform (describeConformance) components that are decorated with `withStyles
+ * Internal helper type for conform (describeConformance) components
  * However, we don't declare classes on this type.
- * It is recommended to declare them manually with an interface so that each class can have a separate JSDOC.
+ * It is recommended to declare them manually with an interface so that each class can have a separate JSDoc.
  */
-export type InternalStandardProps<C, Removals extends keyof C = never> = Omit<
+export type InternalStandardProps<C, Removals extends keyof C = never> = DistributiveOmit<
   C,
   'classes' | Removals
 > &
-  // each component declares it's classes in a separate interface for proper JSDOC
+  // each component declares it's classes in a separate interface for proper JSDoc
   StyledComponentProps<never> & {
     ref?: C extends { ref?: infer RefType } ? RefType : React.Ref<unknown>;
     // TODO: Remove implicit props. Up to each component.
@@ -66,6 +59,8 @@ export interface Color {
 }
 
 export namespace PropTypes {
+  // keeping the type structure for backwards compat
+  // eslint-disable-next-line @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars
   type Color = 'inherit' | 'primary' | 'secondary' | 'default';
 }
 
@@ -77,6 +72,8 @@ export { colors };
 export * from './styles';
 
 export * from './utils';
+
+export * from '@material-ui/unstyled';
 
 export { default as Accordion } from './Accordion';
 export * from './Accordion';
@@ -174,6 +171,9 @@ export * from './Container';
 export { default as CssBaseline } from './CssBaseline';
 export * from './CssBaseline';
 
+export { default as darkScrollbar } from './darkScrollbar';
+export * from './darkScrollbar';
+
 export { default as Dialog } from './Dialog';
 export * from './Dialog';
 
@@ -270,6 +270,9 @@ export * from './ListItem';
 export { default as ListItemAvatar } from './ListItemAvatar';
 export * from './ListItemAvatar';
 
+export { default as ListItemButton } from './ListItemButton';
+export * from './ListItemButton';
+
 export { default as ListItemIcon } from './ListItemIcon';
 export * from './ListItemIcon';
 
@@ -321,9 +324,6 @@ export * from './Popover';
 export { default as Popper } from './Popper';
 export * from './Popper';
 
-export { default as Portal } from './Portal';
-export * from './Portal';
-
 export { default as Radio } from './Radio';
 export * from './Radio';
 
@@ -362,6 +362,9 @@ export * from './SpeedDialAction';
 
 export { default as SpeedDialIcon } from './SpeedDialIcon';
 export * from './SpeedDialIcon';
+
+export { default as Stack } from './Stack';
+export * from './Stack';
 
 export { default as Step } from './Step';
 export * from './Step';
@@ -450,17 +453,11 @@ export * from './Tooltip';
 export { default as Typography } from './Typography';
 export * from './Typography';
 
-export { default as Unstable_TrapFocus } from './Unstable_TrapFocus';
-export * from './Unstable_TrapFocus';
-
 export { default as useMediaQuery } from './useMediaQuery';
 export * from './useMediaQuery';
 
 export { default as useScrollTrigger } from './useScrollTrigger';
 export * from './useScrollTrigger';
-
-export { default as withWidth } from './withWidth';
-export * from './withWidth';
 
 export { default as Zoom } from './Zoom';
 export * from './Zoom';
@@ -468,4 +465,10 @@ export * from './Zoom';
 export { default as useAutocomplete } from './useAutocomplete';
 export * from './useAutocomplete';
 
-export { StylesProvider } from '@material-ui/styled-engine';
+export { default as GlobalStyles } from './GlobalStyles';
+export * from './GlobalStyles';
+
+/**
+ * @deprecated will be removed in v5.beta, please use StyledEngineProvider from @material-ui/core/styles instead
+ */
+export { StyledEngineProvider } from './styles';

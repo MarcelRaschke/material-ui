@@ -1,24 +1,22 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { getClasses, createMount, createClientRender, describeConformance } from 'test/utils';
-import CardHeader from './CardHeader';
-import { typographyClasses } from '../Typography';
+import { createClientRender, describeConformanceV5 } from 'test/utils';
+import { typographyClasses } from '@material-ui/core/Typography';
+import CardHeader, { cardHeaderClasses as classes } from '@material-ui/core/CardHeader';
 
 describe('<CardHeader />', () => {
-  const mount = createMount();
-  let classes;
   const render = createClientRender();
 
-  before(() => {
-    classes = getClasses(<CardHeader />);
-  });
-
-  describeConformance(<CardHeader />, () => ({
+  describeConformanceV5(<CardHeader />, () => ({
     classes,
     inheritComponent: 'div',
-    mount,
+    render,
+    muiName: 'MuiCardHeader',
     refInstanceof: window.HTMLDivElement,
+    testDeepOverrides: { slotName: 'content', slotClassName: classes.content },
     testComponentPropWith: 'span',
+    testVariantProps: { variant: 'foo' },
+    skip: ['componentsProp'],
   }));
 
   describe('without an avatar', () => {
@@ -31,14 +29,13 @@ describe('<CardHeader />', () => {
       expect(title).to.have.class(typographyClasses.h5);
     });
 
-    it('should render the subheader as body1 secondary text', () => {
+    it('should render the subheader as body1', () => {
       const cardHeader = render(<CardHeader title="Title" subheader="Subheader" />).container
         .firstChild;
       const wrapper = cardHeader.firstChild;
       const subheader = wrapper.childNodes[1];
       expect(subheader).to.have.class(typographyClasses.root);
       expect(subheader).to.have.class(typographyClasses.body1);
-      expect(subheader).to.have.class(typographyClasses.colorTextSecondary);
     });
 
     it('should not render the subheader if none is given', () => {
@@ -81,7 +78,6 @@ describe('<CardHeader />', () => {
       const subHeader = titleWrapper.childNodes[1];
       expect(subHeader).to.have.class(typographyClasses.root);
       expect(subHeader).to.have.class(typographyClasses.body2);
-      expect(subHeader).to.have.class(typographyClasses.colorTextSecondary);
     });
   });
 });

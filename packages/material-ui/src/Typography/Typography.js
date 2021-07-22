@@ -1,67 +1,61 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import experimentalStyled from '../styles/experimentalStyled';
+import { unstable_extendSxProp as extendSxProp } from '@material-ui/system';
+import { unstable_composeClasses as composeClasses } from '@material-ui/unstyled';
+import styled from '../styles/styled';
 import useThemeProps from '../styles/useThemeProps';
 import capitalize from '../utils/capitalize';
-import typographyClasses, { getTypographyUtilityClass } from './typographyClasses';
+import { getTypographyUtilityClass } from './typographyClasses';
 
-const getTextColor = (color, palette) => {
-  if (color.indexOf('text') === 0) {
-    return palette.text[color.split('text').pop().toLowerCase()];
-  }
+const useUtilityClasses = (styleProps) => {
+  const { align, gutterBottom, noWrap, paragraph, variant, classes } = styleProps;
 
-  if (color === 'inherit' || color === 'initial') {
-    return color;
-  }
-
-  return palette[color].main;
-};
-
-const overridesResolver = (props, styles) => {
-  const { styleProps = {} } = props;
-
-  const styleOverrides = {
-    ...styles.root,
-    ...(styleProps.variant && styles[styleProps.variant]),
-    ...(styleProps.color && styles[`color${capitalize(styleProps.color)}`]),
-    ...(styleProps.align && styles[`align${capitalize(styleProps.align)}`]),
-    ...(styleProps.display && styles[`display${capitalize(styleProps.display)}`]),
-    ...(styleProps.noWrap && styles.noWrap),
-    ...(styleProps.gutterBottom && styles.gutterBottom),
-    ...(styleProps.paragraph && styles.paragraph),
+  const slots = {
+    root: [
+      'root',
+      variant,
+      styleProps.align !== 'inherit' && `align${capitalize(align)}`,
+      gutterBottom && 'gutterBottom',
+      noWrap && 'noWrap',
+      paragraph && 'paragraph',
+    ],
   };
 
-  return styleOverrides;
+  return composeClasses(slots, getTypographyUtilityClass, classes);
 };
 
-export const TypographyRoot = experimentalStyled(
-  'span',
-  {},
-  { name: 'Typography', slot: 'Root', overridesResolver },
-)((props) => ({
+export const TypographyRoot = styled('span', {
+  name: 'MuiTypography',
+  slot: 'Root',
+  overridesResolver: (props, styles) => {
+    const { styleProps } = props;
+
+    return [
+      styles.root,
+      styleProps.variant && styles[styleProps.variant],
+      styleProps.align !== 'inherit' && styles[`align${capitalize(styleProps.align)}`],
+      styleProps.noWrap && styles.noWrap,
+      styleProps.gutterBottom && styles.gutterBottom,
+      styleProps.paragraph && styles.paragraph,
+    ];
+  },
+})(({ theme, styleProps }) => ({
   margin: 0,
-  ...(props.styleProps.variant && props.theme.typography[props.styleProps.variant]),
-  ...(props.styleProps.align !== 'inherit' && {
-    textAlign: props.styleProps.align,
+  ...(styleProps.variant && theme.typography[styleProps.variant]),
+  ...(styleProps.align !== 'inherit' && {
+    textAlign: styleProps.align,
   }),
-  ...(props.styleProps.noWrap && {
+  ...(styleProps.noWrap && {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   }),
-  ...(props.styleProps.gutterBottom && {
+  ...(styleProps.gutterBottom && {
     marginBottom: '0.35em',
   }),
-  ...(props.styleProps.paragraph && {
+  ...(styleProps.paragraph && {
     marginBottom: 16,
-  }),
-  ...(props.styleProps.color &&
-    props.styleProps.color !== 'initial' && {
-      color: getTextColor(props.styleProps.color, props.theme.palette),
-    }),
-  ...(props.styleProps.display !== 'initial' && {
-    display: props.styleProps.display,
   }),
 }));
 
@@ -79,44 +73,28 @@ const defaultVariantMapping = {
   inherit: 'p',
 };
 
-const useTypographyClasses = (props) => {
-  const { align, color, display, gutterBottom, noWrap, paragraph, variant, classes = {} } = props;
+// TODO v6: deprecate these color values in v5.x and remove the transformation in v6
+const colorTransformations = {
+  primary: 'primary.main',
+  textPrimary: 'text.primary',
+  secondary: 'secondary.main',
+  textSecondary: 'text.secondary',
+  error: 'error.main',
+};
 
-  const utilityClasses = {
-    root: clsx(
-      typographyClasses['root'],
-      classes['root'],
-      getTypographyUtilityClass(`color${capitalize(color)}`),
-      classes[`color${capitalize(color)}`],
-      typographyClasses[`align${capitalize(align)}`],
-      classes[`align${capitalize(align)}`],
-      typographyClasses[`display${capitalize(display)}`],
-      classes[`display${capitalize(display)}`],
-      getTypographyUtilityClass(variant),
-      classes[variant],
-      {
-        [typographyClasses['gutterBottom']]: gutterBottom,
-        [classes['gutterBottom']]: gutterBottom,
-        [typographyClasses['noWrap']]: noWrap,
-        [classes['noWrap']]: noWrap,
-        [typographyClasses['paragraph']]: paragraph,
-        [classes['paragraph']]: paragraph,
-      },
-    ),
-  };
-
-  return utilityClasses;
+const transformDeprecatedColors = (color) => {
+  return colorTransformations[color] || color;
 };
 
 const Typography = React.forwardRef(function Typography(inProps, ref) {
-  const props = useThemeProps({ props: inProps, name: 'MuiTypography' });
+  const themeProps = useThemeProps({ props: inProps, name: 'MuiTypography' });
+  const color = transformDeprecatedColors(themeProps.color);
+  const props = extendSxProp({ ...themeProps, color });
 
   const {
     align = 'inherit',
     className,
-    color = 'initial',
     component,
-    display = 'initial',
     gutterBottom = false,
     noWrap = false,
     paragraph = false,
@@ -125,13 +103,12 @@ const Typography = React.forwardRef(function Typography(inProps, ref) {
     ...other
   } = props;
 
-  const stateAndProps = {
+  const styleProps = {
     ...props,
     align,
-    className,
     color,
+    className,
     component,
-    display,
     gutterBottom,
     noWrap,
     paragraph,
@@ -144,20 +121,20 @@ const Typography = React.forwardRef(function Typography(inProps, ref) {
     (paragraph ? 'p' : variantMapping[variant] || defaultVariantMapping[variant]) ||
     'span';
 
-  const classes = useTypographyClasses(stateAndProps);
+  const classes = useUtilityClasses(styleProps);
 
   return (
     <TypographyRoot
       as={Component}
       ref={ref}
-      styleProps={stateAndProps}
+      styleProps={styleProps}
       className={clsx(classes.root, className)}
       {...other}
     />
   );
 });
 
-Typography.propTypes = {
+Typography.propTypes /* remove-proptypes */ = {
   // ----------------------------- Warning --------------------------------
   // | These PropTypes are generated from the TypeScript type definitions |
   // |     To update them edit the d.ts file and run "yarn proptypes"     |
@@ -180,28 +157,10 @@ Typography.propTypes = {
    */
   className: PropTypes.string,
   /**
-   * The color of the component. It supports those theme colors that make sense for this component.
-   * @default 'initial'
-   */
-  color: PropTypes.oneOf([
-    'error',
-    'inherit',
-    'initial',
-    'primary',
-    'secondary',
-    'textPrimary',
-    'textSecondary',
-  ]),
-  /**
    * The component used for the root node.
    * Either a string to use a HTML element or a component.
    */
   component: PropTypes.elementType,
-  /**
-   * Controls the display type
-   * @default 'initial'
-   */
-  display: PropTypes.oneOf(['block', 'initial', 'inline']),
   /**
    * If `true`, the text will have a bottom margin.
    * @default false
@@ -216,10 +175,14 @@ Typography.propTypes = {
    */
   noWrap: PropTypes.bool,
   /**
-   * If `true`, the text will have a bottom margin.
+   * If `true`, the element will be a paragraph element.
    * @default false
    */
   paragraph: PropTypes.bool,
+  /**
+   * The system prop that allows defining system overrides as well as additional CSS styles.
+   */
+  sx: PropTypes.object,
   /**
    * Applies the theme typography styles.
    * @default 'body1'

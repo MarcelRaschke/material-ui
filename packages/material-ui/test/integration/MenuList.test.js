@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { spy } from 'sinon';
+import { spy, useFakeTimers } from 'sinon';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import Divider from '@material-ui/core/Divider';
@@ -146,7 +146,9 @@ describe('<MenuList> integration', () => {
       );
       const menuitems = getAllByRole('menuitem');
 
-      menuitems[0].focus();
+      act(() => {
+        menuitems[0].focus();
+      });
 
       expect(menuitems[0]).toHaveFocus();
       expect(menuitems[0]).to.have.property('tabIndex', 0);
@@ -434,7 +436,9 @@ describe('<MenuList> integration', () => {
         </MenuList>,
       );
       const menu = getByRole('menu');
-      menu.focus();
+      act(() => {
+        menu.focus();
+      });
 
       fireEvent.keyDown(menu, { key: 'a' });
 
@@ -466,8 +470,10 @@ describe('<MenuList> integration', () => {
 
       const menuitem = getByText('Arizona');
       // user click
-      fireEvent.mouseDown(menuitem);
-      menuitem.focus();
+      act(() => {
+        fireEvent.mouseDown(menuitem);
+        menuitem.focus();
+      });
       fireEvent.click(menuitem);
 
       expect(menuitem).toHaveFocus();
@@ -541,21 +547,31 @@ describe('<MenuList> integration', () => {
       expect(screen.getByText('Worm')).toHaveFocus();
     });
 
-    it('should reset the character buffer after 500ms', (done) => {
-      render(
-        <MenuList autoFocus>
-          <MenuItem>Worm</MenuItem>
-          <MenuItem>Ordinary</MenuItem>
-        </MenuList>,
-      );
+    describe('time', () => {
+      let clock;
+      beforeEach(() => {
+        clock = useFakeTimers();
+      });
 
-      fireEvent.keyDown(screen.getByRole('menu'), { key: 'W' });
-      setTimeout(() => {
+      afterEach(() => {
+        act(() => {
+          clock.restore();
+        });
+      });
+
+      it('should reset the character buffer after 500ms', () => {
+        render(
+          <MenuList autoFocus>
+            <MenuItem>Worm</MenuItem>
+            <MenuItem>Ordinary</MenuItem>
+          </MenuList>,
+        );
+
+        fireEvent.keyDown(screen.getByRole('menu'), { key: 'W' });
+        clock.tick(501);
         fireEvent.keyDown(screen.getByText('Worm'), { key: 'o' });
-
         expect(screen.getByText('Ordinary')).toHaveFocus();
-        done();
-      }, 500);
+      });
     });
 
     it('should match ignoring hidden text', function testHiddenText() {

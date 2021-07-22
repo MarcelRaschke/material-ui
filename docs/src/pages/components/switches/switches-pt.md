@@ -9,19 +9,35 @@ materialDesign: 'https://material.io/components/selection-controls#switches'
 
 <p class="description">Interruptores alternam o estado de uma única configuração ligado ou desligado.</p>
 
-[Interruptores](https://material.io/design/components/selection-controls.html#switches) são a forma preferida de ajustes de configuração em mobile. A opção que o interruptor controla, juntamente com o estado atual, deve ser claramente explícita no rótulo em linha correspondente.
+[Interruptores](https://material.io/design/components/selection-controls.html#switches) são a forma preferida de ajustes de configuração em mobile. The option that the switch controls, as well as the state it's in, should be made clear from the corresponding inline label.
 
 {{"component": "modules/components/ComponentLinkHeader.js"}}
 
 ## Interruptores básicos
 
-{{"demo": "pages/components/switches/Switches.js"}}
+{{"demo": "pages/components/switches/BasicSwitches.js"}}
 
-## Interruptores com FormControlLabel
+## Caixas de seleção com FormGroup
 
-O componente `Switch` pode ser fornecido com uma descrição graças ao componente `FormControlLabel`.
+You can provide a label to the `Switch` thanks to the `FormControlLabel` component.
 
 {{"demo": "pages/components/switches/SwitchLabels.js"}}
+
+## Tamanho
+
+Use the `size` prop to change the size of the switch.
+
+{{"demo": "pages/components/switches/SwitchesSize.js"}}
+
+## Cor
+
+{{"demo": "pages/components/switches/ColorSwitches.js"}}
+
+## Controlled
+
+You can control the switch with the `checked` and `onChange` props:
+
+{{"demo": "pages/components/switches/ControlledSwitches.js"}}
 
 ## Interruptores com FormGroup
 
@@ -31,17 +47,11 @@ O componente `Switch` pode ser fornecido com uma descrição graças ao componen
 
 ## Interruptores customizados
 
-Aqui estão alguns exemplos de customização do componente. Você pode aprender mais sobre isso na [página de documentação de sobrescritas](/customization/components/).
+Aqui estão alguns exemplos de customização do componente. Você pode aprender mais sobre isso na [página de documentação de sobrescritas](/customization/how-to-customize/).
 
 {{"demo": "pages/components/switches/CustomizedSwitches.js"}}
 
 🎨 Se você está procurando inspiração, você pode verificar [os exemplos de customização de MUI Treasury](https://mui-treasury.com/styles/switch).
-
-## Tamanhos
-
-Gosta de interruptores menores? Use a propriedade `size`.
-
-{{"demo": "pages/components/switches/SwitchesSize.js"}}
 
 ## Posicionamento do rótulo
 

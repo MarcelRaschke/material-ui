@@ -20,13 +20,13 @@ Um menu básico abre sobre o elemento âncora por padrão (esta opção pode ser
 
 Escolhendo uma opção deve confirmar imediatamente a opção e fechar o menu.
 
-**Desambiguação**: Em contraste com menus simples, uma caixa de diálogo simples pode apresentar detalhes adicionais relacionados às opções disponíveis para um item da lista ou fornecer navegação ou ações indiretas relacionada à tarefa principal. Embora possam exibir o mesmo conteúdo, menus simples são preferidos em relação a diálogos simples, pois menus simples são menos prejudiciais ao contexto atual do usuário.
+**Desambiguação**: Em contraste com menus simples, uma caixa de diálogo simples pode apresentar detalhes adicionais relacionados às opções disponíveis para um item da lista ou fornecer navegação ou ações indiretas relacionada à tarefa principal. Although they can display the same content, simple menus are preferred over simple dialogs because simple menus are less disruptive to the user's current context.
 
-{{"demo": "pages/components/menus/SimpleMenu.js"}}
+{{"demo": "pages/components/menus/BasicMenu.js"}}
 
 ## Menu selecionado
 
-Se usado para a seleção de itens, quando abertos, menus simples tentam alinhar verticalmente o item de menu atualmente selecionado com o elemento de âncora, e o foco inicial será colocado no item de menu selecionado. O item de menu atualmente selecionado é definido usando a propriedade`selected`(de [ListItem](/api/list-item/)). Para usar um item de menu selecionado sem afetar o foco inicial ou o posicionamento vertical do menu, defina a propriedade `variant` como `menu`.
+If used for item selection, when opened, simple menus places the initial focus on the selected menu item. O item de menu atualmente selecionado é definido usando a propriedade`selected`(de [ListItem](/api/list-item/)). To use a selected menu item without impacting the initial focus, set the `variant` prop to "menu".
 
 {{"demo": "pages/components/menus/SimpleListMenu.js"}}
 
@@ -46,7 +46,7 @@ A principal responsabilidade do componente `MenuList` é manipular o foco.
 
 ## Menu customizado
 
-Aqui está um exemplo de customização do componente. Você pode aprender mais sobre isso na [página de documentação de sobrescritas](/customization/components/).
+Aqui está um exemplo de customização do componente. Você pode aprender mais sobre isso na [página de documentação de sobrescritas](/customization/how-to-customize/).
 
 {{"demo": "pages/components/menus/CustomizedMenus.js"}}
 

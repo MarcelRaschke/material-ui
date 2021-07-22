@@ -1,5 +1,8 @@
 import * as React from 'react';
+import { SxProps } from '@material-ui/system';
+import { Theme } from '..';
 import { OverridableComponent, OverrideProps } from '../OverridableComponent';
+import { BottomNavigationClasses } from './bottomNavigationClasses';
 
 export interface BottomNavigationTypeMap<P = {}, D extends React.ElementType = 'div'> {
   props: P & {
@@ -10,14 +13,11 @@ export interface BottomNavigationTypeMap<P = {}, D extends React.ElementType = '
     /**
      * Override or extend the styles applied to the component.
      */
-    classes?: {
-      /** Styles applied to the root element. */
-      root?: string;
-    };
+    classes?: Partial<BottomNavigationClasses>;
     /**
      * Callback fired when the value changes.
      *
-     * @param {object} event The event source of the callback. **Warning**: This is a generic event not a change event.
+     * @param {React.SyntheticEvent} event The event source of the callback. **Warning**: This is a generic event not a change event.
      * @param {any} value We default to the index of the child.
      */
     onChange?: (event: React.SyntheticEvent, value: any) => void;
@@ -27,6 +27,10 @@ export interface BottomNavigationTypeMap<P = {}, D extends React.ElementType = '
      * @default false
      */
     showLabels?: boolean;
+    /**
+     * The system prop that allows defining system overrides as well as additional CSS styles.
+     */
+    sx?: SxProps<Theme>;
     /**
      * The value of the currently selected `BottomNavigationAction`.
      */
@@ -46,13 +50,9 @@ export interface BottomNavigationTypeMap<P = {}, D extends React.ElementType = '
  */
 declare const BottomNavigation: OverridableComponent<BottomNavigationTypeMap>;
 
-export type BottomNavigationClassKey = keyof NonNullable<
-  BottomNavigationTypeMap['props']['classes']
->;
-
 export type BottomNavigationProps<
   D extends React.ElementType = BottomNavigationTypeMap['defaultComponent'],
-  P = {}
+  P = {},
 > = OverrideProps<BottomNavigationTypeMap<P, D>, D>;
 
 export default BottomNavigation;

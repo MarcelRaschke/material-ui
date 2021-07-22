@@ -17,7 +17,7 @@ Material-UI fornece suporte de ícones de três maneiras:
 
 ## Ícones Material
 
-O Material Design padronizou mais de 1.100 ícones oficiais, cada um em cinco "temas" diferentes (veja abaixo). Para cada ícone SVG, exportamos o respectivo componente React do pacote @material-ui/icons. Você pode [pesquisar na lista completa destes ícones](/components/material-icons/).
+Google has created over 1,700 official Material icons, each in five different "themes" (see below). Para cada ícone SVG, exportamos o respectivo componente React do pacote @material-ui/icons. Você pode [pesquisar na lista completa destes ícones](/components/material-icons/).
 
 ### Instalação
 
@@ -70,7 +70,7 @@ Cada ícone Material também tem um "tema": Filled (padrão), Outlined, Rounded,
 - Tema Two tone (dois tons) é exportado como `@material-ui/icons/DeleteTwoTone`,
 - Tema Sharp (pontiagudo) é exportado como `@material-ui/icons/DeleteSharp`.
 
-> Nota: A especificação Material Design nomeia os ícones usando a nomeação "snake_case" (por exemplo, `delete_forever`, `add_a_photo`), enquanto `@material-ui/icons` exporta os respectivos ícones usando a nomeação "PascalCase" (por exemplo `DeleteForever`, `AddAPhoto`). Há três exceções a essa regra de nomenclatura: `3d_rotation` exportado como `ThreeDRotation`, `4k` exportado como `FourK`e `360` exportado como `ThreeSixty`.
+> Note: The Material Design guidelines name the icons using "snake_case" naming (for example `delete_forever`, `add_a_photo`), while `@material-ui/icons` exports the respective icons using "PascalCase" naming (for example `DeleteForever`, `AddAPhoto`). Há três exceções a essa regra de nomenclatura: `3d_rotation` exportado como `ThreeDRotation`, `4k` exportado como `FourK`e `360` exportado como `ThreeSixty`.
 
 {{"demo": "pages/components/icons/SvgMaterialIcons.js"}}
 
@@ -179,7 +179,7 @@ Nota: A biblioteca [mdi-material-ui](https://github.com/TeamWertarbyte/mdi-mater
 
 ## Ícone (ícones de fonte)
 
-O componente `Icon` exibirá um ícone de qualquer fonte de ícone que suporte ligadura tipográfica (ligatures). Como pré-requisito, você deve incluir uma em seu projeto, como a [Material icon font](https://google.github.io/material-design-icons/#icon-font-for-the-web). Para usar um ícone, simplesmente coloque o nome do ícone (font ligature) com o componente `Icon`, por exemplo:
+O componente `Icon` exibirá um ícone de qualquer fonte de ícone que suporte ligadura tipográfica (ligatures). O componente `Icon` exibirá um ícone de qualquer fonte de ícone que suporte ligadura tipográfica (ligatures). Para usar um ícone, simplesmente coloque o nome do ícone (font ligature) com o componente `Icon`, por exemplo:
 
 ```jsx
 import Icon from '@material-ui/core/Icon';
@@ -220,11 +220,11 @@ import Icon from '@material-ui/core/Icon';
 Modificar a propriedade `baseClassName` para cada uso feito do componente é repetitivo. Você pode alterar a propriedade padrão globalmente com o tema
 
 ```js
-const theme = createMuiTheme({
+const theme = createTheme({
   components: {
     MuiIcon: {
       defaultProps: {
-        // Substitui o valor padrão `material-icons`.
+        // Replace the `material-icons` default value.
         baseClassName: 'material-icons-two-tone',
       },
     },
@@ -247,12 +247,12 @@ Então, você pode usar a fonte de dois tons diretamente:
 Note que os ícones da fonte Awesome não foram projetados como os ícones do Material Design (compare as duas demonstrações anteriores). Os ícones fa são cortados para usar todo o espaço disponível. Você pode ajustar isso com uma sobrescrita global:
 
 ```js
-const theme = createMuiTheme({
+const theme = createTheme({
   components: {
     MuiIcon: {
       styleOverrides: {
         root: {
-          // Corresponde 24px = 3 * 2 + 1.125 * 16
+          // Match 24px = 3 * 2 + 1.125 * 16
           boxSizing: 'content-box',
           padding: 3,
           fontSize: '1.125rem',
@@ -276,11 +276,11 @@ Para maiores detalhes, dê uma olhada no [porque o GitHub migrou ícones de font
 Ícones podem transmitir todos os tipos de informações significativas, então é importante garantir que eles estejam apropriadamente acessíveis. Há dois casos de uso que você deve considerar:
 
 - **Ícones decorativos** que são usados apenas para reforço visual ou de marca. Se eles forem removidos da página, os usuários ainda entenderiam e poderiam usar sua página.
-- **Ícones Semânticos** são aqueles que você usa para transmitir significado, em vez de apenas pura decoração. Isso inclui ícones sem texto ao lado deles que são usados como controles interativos — botões, elementos de forma, toggles, etc.
+- **Semantic icons** are ones that you're using to convey meaning, rather than just pure decoration. Isso inclui ícones sem texto ao lado deles que são usados como controles interativos — botões, elementos de forma, toggles, etc.
 
 ### Ícones decorativos
 
-Se seus ícones são puramente decorativos, você já terminou! O atributo `aria-hidden=true` foi adicionado para que seus ícones estejam adequadamente acessíveis (invisíveis).
+If your icons are purely decorative, you're already done! O atributo `aria-hidden=true` foi adicionado para que seus ícones estejam adequadamente acessíveis (invisíveis).
 
 ### Ícones semânticos
 
@@ -308,13 +308,14 @@ import SvgIcon from '@material-ui/core/SvgIcon';
 Você precisa fornecer um texto alternativo que só seja visível para tecnologia assistiva.
 
 ```jsx
+import Box from '@material-ui/core/Box';
 import Icon from '@material-ui/core/Icon';
-import Typography from '@material-ui/core/Typography';
+import { visuallyHidden } from '@material-ui/utils';
 
 // ...
 
 <Icon>add_circle</Icon>
-<Typography variant="srOnly">Crie um usuário</Typography>
+<Box component="span" sx={visuallyHidden}>Create a user</Box>
 ```
 
 #### Referência

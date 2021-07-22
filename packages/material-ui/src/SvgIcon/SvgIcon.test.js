@@ -1,27 +1,26 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { getClasses, createMount, describeConformance, createClientRender } from 'test/utils';
-import SvgIcon from './SvgIcon';
+import { describeConformanceV5, createClientRender } from 'test/utils';
+import SvgIcon, { svgIconClasses as classes } from '@material-ui/core/SvgIcon';
 
 describe('<SvgIcon />', () => {
-  const mount = createMount();
   const render = createClientRender();
-  let classes;
+
   let path;
 
   before(() => {
-    classes = getClasses(<SvgIcon>foo</SvgIcon>);
     path = <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" data-testid="test-path" />;
   });
 
-  describeConformance(
+  describeConformanceV5(
     <SvgIcon>
       <path />
     </SvgIcon>,
     () => ({
       classes,
       inheritComponent: 'svg',
-      mount,
+      render,
+      muiName: 'MuiSvgIcon',
       refInstanceof: window.SVGSVGElement,
       testComponentPropWith: (props) => (
         <svg {...props}>
@@ -34,13 +33,14 @@ describe('<SvgIcon />', () => {
           {props.children}
         </svg>
       ),
+      skip: ['themeVariants', 'componentsProp'],
     }),
   );
 
   it('renders children by default', () => {
     const { container, queryByTestId } = render(<SvgIcon>{path}</SvgIcon>);
 
-    expect(queryByTestId('test-path')).to.not.equal(null);
+    expect(queryByTestId('test-path')).not.to.equal(null);
     expect(container.firstChild).to.have.attribute('aria-hidden', 'true');
   });
 
@@ -52,8 +52,8 @@ describe('<SvgIcon />', () => {
         </SvgIcon>,
       );
 
-      expect(queryByText('Network')).to.not.equal(null);
-      expect(container.firstChild).to.not.have.attribute('aria-hidden');
+      expect(queryByText('Network')).not.to.equal(null);
+      expect(container.firstChild).not.to.have.attribute('aria-hidden');
     });
   });
 

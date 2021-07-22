@@ -1,13 +1,13 @@
 import * as React from 'react';
-import clsx from 'clsx';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { styled } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import Drawer from '@material-ui/core/Drawer';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import Divider from '@material-ui/core/Divider';
-import Hidden from '@material-ui/core/Hidden';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Box from '@material-ui/core/Box';
+import { unstable_useEnhancedEffect as useEnhancedEffect } from '@material-ui/utils';
 import DiamondSponsors from 'docs/src/modules/components/DiamondSponsors';
 import AppNavDrawerItem from 'docs/src/modules/components/AppNavDrawerItem';
 import Link from 'docs/src/modules/components/Link';
@@ -15,59 +15,47 @@ import { pageToTitleI18n } from 'docs/src/modules/utils/helpers';
 import PageContext from 'docs/src/modules/components/PageContext';
 import { useUserLanguage, useTranslate } from 'docs/src/modules/utils/i18n';
 
-let savedScrollTop = null;
+const savedScrollTop = {};
+
 function PersistScroll(props) {
-  const { children } = props;
+  const { slot, children, enabled } = props;
   const rootRef = React.useRef();
 
-  React.useEffect(() => {
+  useEnhancedEffect(() => {
     const parent = rootRef.current ? rootRef.current.parentElement : null;
-    const activeElement = document.querySelector('.app-drawer-active');
+    const activeElement = parent.querySelector('.app-drawer-active');
 
-    if (!parent || !activeElement || !activeElement.scrollIntoView) {
+    if (!enabled || !parent || !activeElement || !activeElement.scrollIntoView) {
       return undefined;
     }
 
+    parent.scrollTop = savedScrollTop[slot];
+
     const activeBox = activeElement.getBoundingClientRect();
 
-    if (savedScrollTop === null || activeBox.top - savedScrollTop < 0) {
-      // Center the selected item in the list container.
-      activeElement.scrollIntoView();
-      // Fix a Chrome issue, reset the tabbable ring back to the top of the document.
-      document.body.scrollIntoView();
-    } else {
-      parent.scrollTop = savedScrollTop;
+    if (activeBox.top < 0 || activeBox.top > window.innerHeight) {
+      parent.scrollTop += activeBox.top - 8 - 32;
     }
 
     return () => {
-      savedScrollTop = parent.scrollTop;
+      savedScrollTop[slot] = parent.scrollTop;
     };
-  }, []);
+  }, [enabled, slot]);
 
   return <div ref={rootRef}>{children}</div>;
 }
 
 PersistScroll.propTypes = {
-  children: PropTypes.node,
+  children: PropTypes.node.isRequired,
+  enabled: PropTypes.bool.isRequired,
+  slot: PropTypes.string.isRequired,
 };
 
-const styles = (theme) => ({
-  paper: {
-    width: 240,
-    backgroundColor: theme.palette.background.level1,
-  },
-  title: {
-    color: theme.palette.text.secondary,
-    marginBottom: theme.spacing(0.5),
-    '&:hover': {
-      color: theme.palette.primary.main,
-    },
-  },
-  // https://github.com/philipwalton/flexbugs#3-min-height-on-a-flex-container-wont-apply-to-its-flex-items
-  toolbarIe11: {
-    display: 'flex',
-  },
-  toolbar: {
+// https://github.com/philipwalton/flexbugs#3-min-height-on-a-flex-container-wont-apply-to-its-flex-items
+const ToolbarIE11 = styled('div')({ display: 'flex' });
+
+const ToolbarDiv = styled('div')(({ theme }) => {
+  return {
     ...theme.mixins.toolbar,
     paddingLeft: theme.spacing(3),
     display: 'flex',
@@ -75,7 +63,33 @@ const styles = (theme) => ({
     flexDirection: 'column',
     alignItems: 'flex-start',
     justifyContent: 'center',
-  },
+  };
+});
+
+const TitleLink = styled(Link)(({ theme }) => {
+  return {
+    color: theme.palette.text.secondary,
+    marginBottom: theme.spacing(0.5),
+    '&:hover': {
+      color: theme.palette.primary.main,
+    },
+  };
+});
+
+const StyledDrawer = styled(Drawer)(({ theme }) => {
+  return {
+    [theme.breakpoints.up('xs')]: {
+      display: 'none',
+    },
+    [theme.breakpoints.up('lg')]: {
+      display: 'block',
+    },
+  };
+});
+
+const SwipeableDrawerPaperComponent = styled('div')({
+  width: 240,
+  boxShadow: 'none',
 });
 
 function renderNavItems(options) {
@@ -99,7 +113,7 @@ function renderNavItems(options) {
 function reduceChildRoutes(context) {
   const { onClose, activePage, items, depth, t } = context;
   let { page } = context;
-  if (page.displayNav === false) {
+  if (page.ordered === false) {
     return items;
   }
 
@@ -141,54 +155,53 @@ function reduceChildRoutes(context) {
 // iOS is hosted on high-end devices. We can enable the backdrop transition without
 // dropping frames. The performance will be good enough.
 // So: <SwipeableDrawer disableBackdropTransition={false} />
-const iOS = process.browser && /iPad|iPhone|iPod/.test(navigator.userAgent);
+const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 function AppNavDrawer(props) {
-  const { classes, className, disablePermanent, mobileOpen, onClose, onOpen } = props;
+  const { className, disablePermanent, mobileOpen, onClose, onOpen } = props;
   const { activePage, pages } = React.useContext(PageContext);
   const userLanguage = useUserLanguage();
   const languagePrefix = userLanguage === 'en' ? '' : `/${userLanguage}`;
   const t = useTranslate();
+  const mobile = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
-  const navItems = React.useMemo(
-    () => renderNavItems({ onClose, pages, activePage, depth: 0, t }),
-    [activePage, pages, onClose, t],
-  );
-  const drawer = (
-    <PersistScroll>
-      <div className={classes.toolbarIe11}>
-        <div className={classes.toolbar}>
-          <Link className={classes.title} href="/" onClick={onClose} variant="h6" color="inherit">
-            Material-UI
-          </Link>
-          {process.env.LIB_VERSION ? (
-            <Link
-              color="textSecondary"
-              variant="caption"
-              href={`https://material-ui.com${languagePrefix}/versions/`}
-              onClick={onClose}
-            >
-              {/* eslint-disable-next-line material-ui/no-hardcoded-labels -- version string is untranslatable */}
-              {`v${process.env.LIB_VERSION}`}
-            </Link>
-          ) : null}
-        </div>
-      </div>
-      <Divider />
-      <Box sx={{ mx: 3, my: 2 }}>
-        <DiamondSponsors spot="drawer" />
-      </Box>
-      {navItems}
-    </PersistScroll>
-  );
+  const drawer = React.useMemo(() => {
+    const navItems = renderNavItems({ onClose, pages, activePage, depth: 0, t });
+
+    return (
+      <React.Fragment>
+        <ToolbarIE11>
+          <ToolbarDiv>
+            <TitleLink href="/" underline="hover" onClick={onClose} variant="h6" color="inherit">
+              Material-UI
+            </TitleLink>
+            {process.env.LIB_VERSION ? (
+              <Link
+                color="text.secondary"
+                underline="hover"
+                variant="caption"
+                href={`https://material-ui.com${languagePrefix}/versions/`}
+                onClick={onClose}
+              >
+                {/* eslint-disable-next-line material-ui/no-hardcoded-labels -- version string is untranslatable */}
+                {`v${process.env.LIB_VERSION}`}
+              </Link>
+            ) : null}
+          </ToolbarDiv>
+        </ToolbarIE11>
+        <Divider />
+        <Box sx={{ mx: 3, my: 2 }}>
+          <DiamondSponsors spot="drawer" />
+        </Box>
+        {navItems}
+      </React.Fragment>
+    );
+  }, [activePage, pages, onClose, t, languagePrefix]);
 
   return (
     <nav className={className} aria-label={t('mainNavigation')}>
-      <Hidden lgUp={!disablePermanent} implementation="js">
+      {disablePermanent || mobile ? (
         <SwipeableDrawer
-          classes={{
-            paper: clsx(classes.paper, 'algolia-drawer'),
-          }}
           disableBackdropTransition={!iOS}
           variant="temporary"
           open={mobileOpen}
@@ -197,29 +210,35 @@ function AppNavDrawer(props) {
           ModalProps={{
             keepMounted: true,
           }}
+          PaperProps={{
+            className: 'algolia-drawer',
+            component: SwipeableDrawerPaperComponent,
+          }}
         >
-          {drawer}
-        </SwipeableDrawer>
-      </Hidden>
-      {disablePermanent ? null : (
-        <Hidden lgDown implementation="css">
-          <Drawer
-            classes={{
-              paper: classes.paper,
-            }}
-            variant="permanent"
-            open
-          >
+          <PersistScroll slot="swipeable" enabled={mobileOpen}>
             {drawer}
-          </Drawer>
-        </Hidden>
+          </PersistScroll>
+        </SwipeableDrawer>
+      ) : null}
+      {disablePermanent || mobile ? null : (
+        <StyledDrawer
+          variant="permanent"
+          PaperProps={{
+            component: SwipeableDrawerPaperComponent,
+            elevation: 2,
+          }}
+          open
+        >
+          <PersistScroll slot="side" enabled>
+            {drawer}
+          </PersistScroll>
+        </StyledDrawer>
       )}
     </nav>
   );
 }
 
 AppNavDrawer.propTypes = {
-  classes: PropTypes.object.isRequired,
   className: PropTypes.string,
   disablePermanent: PropTypes.bool.isRequired,
   mobileOpen: PropTypes.bool.isRequired,
@@ -227,4 +246,4 @@ AppNavDrawer.propTypes = {
   onOpen: PropTypes.func.isRequired,
 };
 
-export default withStyles(styles)(AppNavDrawer);
+export default AppNavDrawer;

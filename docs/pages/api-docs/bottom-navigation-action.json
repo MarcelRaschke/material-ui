@@ -5,11 +5,12 @@
     "icon": { "type": { "name": "node" } },
     "label": { "type": { "name": "node" } },
     "showLabel": { "type": { "name": "bool" } },
+    "sx": { "type": { "name": "object" } },
     "value": { "type": { "name": "any" } }
   },
   "name": "BottomNavigationAction",
   "styles": {
-    "classes": ["root", "selected", "iconOnly", "wrapper", "label"],
+    "classes": ["root", "selected", "iconOnly", "label"],
     "globalClasses": { "selected": "Mui-selected" },
     "name": "MuiBottomNavigationAction"
   },
@@ -18,5 +19,6 @@
   "filename": "/packages/material-ui/src/BottomNavigationAction/BottomNavigationAction.js",
   "inheritance": { "component": "ButtonBase", "pathname": "/api/button-base/" },
   "demos": "<ul><li><a href=\"/components/bottom-navigation/\">Bottom Navigation</a></li></ul>",
-  "styledComponent": false
+  "styledComponent": true,
+  "cssComponent": false
 }

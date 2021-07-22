@@ -1,14 +1,179 @@
+import * as React from 'react';
 import PropTypes from 'prop-types';
-import { makeDateRangePicker } from '../DateRangePicker/makeDateRangePicker';
-import MobileWrapper from '../internal/pickers/wrappers/MobileWrapper';
+import { useThemeProps } from '@material-ui/core/styles';
+import MobileWrapper, { MobileWrapperProps } from '../internal/pickers/wrappers/MobileWrapper';
+import { useDefaultDates, useUtils } from '../internal/pickers/hooks/useUtils';
+import { RangeInput, DateRange } from '../DateRangePicker/RangeTypes';
+import {
+  DateRangeValidationError,
+  useDateRangeValidation,
+  ValidationProps,
+} from '../internal/pickers/hooks/useValidation';
+import { usePickerState, PickerStateValueManager } from '../internal/pickers/hooks/usePickerState';
+import {
+  DateRangePickerView,
+  ExportedDateRangePickerViewProps,
+} from '../DateRangePicker/DateRangePickerView';
+import DateRangePickerInput, {
+  ExportedDateRangePickerInputProps,
+} from '../DateRangePicker/DateRangePickerInput';
+import { parseRangeInputValue } from '../internal/pickers/date-utils';
+import { DateInputPropsLike } from '../internal/pickers/wrappers/WrapperProps';
+
+interface BaseDateRangePickerProps<TDate>
+  extends ExportedDateRangePickerViewProps<TDate>,
+    ValidationProps<DateRangeValidationError, RangeInput<TDate>>,
+    ExportedDateRangePickerInputProps {
+  /**
+   * The components used for each slot.
+   * Either a string to use a HTML element or a component.
+   * @default {}
+   */
+  components?: ExportedDateRangePickerViewProps<TDate>['components'] &
+    ExportedDateRangePickerInputProps['components'];
+  /**
+   * Text for end input label and toolbar placeholder.
+   * @default 'End'
+   */
+  endText?: React.ReactNode;
+  /**
+   * Custom mask. Can be used to override generate from format. (e.g. `__/__/____ __:__` or `__/__/____ __:__ _M`).
+   * @default '__/__/____'
+   */
+  mask?: ExportedDateRangePickerInputProps['mask'];
+  /**
+   * Min selectable date. @DateIOType
+   * @default defaultMinDate
+   */
+  minDate?: TDate;
+  /**
+   * Max selectable date. @DateIOType
+   * @default defaultMaxDate
+   */
+  maxDate?: TDate;
+  /**
+   * Callback fired when the value (the selected date range) changes @DateIOType.
+   */
+  onChange: (date: DateRange<TDate>, keyboardInputValue?: string) => void;
+  /**
+   * Text for start input label and toolbar placeholder.
+   * @default 'Start'
+   */
+  startText?: React.ReactNode;
+  /**
+   * The value of the date range picker.
+   */
+  value: RangeInput<TDate>;
+}
+
+const PureDateInputComponent = DateRangePickerInput as unknown as React.FC<DateInputPropsLike>;
+
+const rangePickerValueManager: PickerStateValueManager<any, any> = {
+  emptyValue: [null, null],
+  parseInput: parseRangeInputValue,
+  areValuesEqual: (utils, a, b) => utils.isEqual(a[0], b[0]) && utils.isEqual(a[1], b[1]),
+};
+
+export interface MobileDateRangePickerProps<TDate = unknown>
+  extends BaseDateRangePickerProps<TDate>,
+    MobileWrapperProps {}
+
+type MobileDateRangePickerComponent = (<TDate>(
+  props: MobileDateRangePickerProps<TDate> & React.RefAttributes<HTMLDivElement>,
+) => JSX.Element) & { propTypes: unknown };
 
 /**
- * @ignore - do not document.
+ *
+ * Demos:
+ *
+ * - [Date Range Picker](https://material-ui.com/components/date-range-picker/)
+ *
+ * API:
+ *
+ * - [MobileDateRangePicker API](https://material-ui.com/api/mobile-date-range-picker/)
  */
-/* @typescript-to-proptypes-generate */
-const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', MobileWrapper);
+const MobileDateRangePicker = React.forwardRef(function MobileDateRangePicker<TDate>(
+  inProps: MobileDateRangePickerProps<TDate>,
+  ref: React.Ref<HTMLDivElement>,
+) {
+  const props = useThemeProps({ props: inProps, name: 'MuiMobileDateRangePicker' });
 
-(MobileDateRangePicker as any).propTypes = {
+  const {
+    calendars = 2,
+    value,
+    onChange,
+    mask = '__/__/____',
+    startText = 'Start',
+    endText = 'End',
+    inputFormat: passedInputFormat,
+    minDate: minDateProp,
+    maxDate: maxDateProp,
+    ...other
+  } = props;
+
+  const utils = useUtils();
+  const defaultDates = useDefaultDates<TDate>();
+  const minDate = minDateProp ?? defaultDates.minDate;
+  const maxDate = maxDateProp ?? defaultDates.maxDate;
+  const [currentlySelectingRangeEnd, setCurrentlySelectingRangeEnd] = React.useState<
+    'start' | 'end'
+  >('start');
+
+  const pickerStateProps = {
+    ...other,
+    value,
+    onChange,
+  };
+
+  const restProps = {
+    ...other,
+    minDate,
+    maxDate,
+  };
+
+  const { pickerProps, inputProps, wrapperProps } = usePickerState<
+    RangeInput<TDate>,
+    DateRange<TDate>
+  >(pickerStateProps, rangePickerValueManager);
+
+  const validationError = useDateRangeValidation(props);
+
+  const DateInputProps = {
+    ...inputProps,
+    ...restProps,
+    currentlySelectingRangeEnd,
+    inputFormat: passedInputFormat || utils.formats.keyboardDate,
+    setCurrentlySelectingRangeEnd,
+    startText,
+    endText,
+    mask,
+    validationError,
+    ref,
+  };
+
+  return (
+    <MobileWrapper
+      {...restProps}
+      {...wrapperProps}
+      DateInputProps={DateInputProps}
+      PureDateInputComponent={PureDateInputComponent}
+    >
+      <DateRangePickerView<any>
+        open={wrapperProps.open}
+        DateInputProps={DateInputProps}
+        calendars={calendars}
+        currentlySelectingRangeEnd={currentlySelectingRangeEnd}
+        setCurrentlySelectingRangeEnd={setCurrentlySelectingRangeEnd}
+        startText={startText}
+        endText={endText}
+        {...pickerProps}
+        {...restProps}
+      />
+    </MobileWrapper>
+  );
+}) as MobileDateRangePickerComponent;
+
+MobileDateRangePicker.propTypes /* remove-proptypes */ = {
   // ----------------------------- Warning --------------------------------
   // | These PropTypes are generated from the TypeScript type definitions |
   // |     To update them edit TypeScript types and run "yarn proptypes"  |
@@ -19,25 +184,28 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   acceptRegex: PropTypes.instanceOf(RegExp),
   /**
-   * Enables keyboard listener for moving between days in calendar.
-   * @default currentWrapper !== 'static'
-   */
-  allowKeyboardControl: PropTypes.bool,
-  /**
    * If `true`, `onChange` is fired on click even if the same date is selected.
    * @default false
    */
   allowSameDateSelection: PropTypes.bool,
+  /**
+   * @ignore
+   */
+  autoFocus: PropTypes.bool,
   /**
    * The number of calendars that render on **desktop**.
    * @default 2
    */
   calendars: PropTypes.oneOf([1, 2, 3]),
   /**
-   * "CANCEL" Text message
-   * @default "CANCEL"
+   * Cancel text message.
+   * @default 'Cancel'
    */
   cancelText: PropTypes.node,
+  /**
+   * @ignore
+   */
+  children: PropTypes.node,
   /**
    * className applied to the root component.
    */
@@ -48,28 +216,39 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   clearable: PropTypes.bool,
   /**
-   * "CLEAR" Text message
-   * @default "CLEAR"
+   * Clear text message.
+   * @default 'Clear'
    */
   clearText: PropTypes.node,
   /**
-   * Allows to pass configured date-io adapter directly. More info [here](https://next.material-ui-pickers.dev/guides/date-adapter-passing)
-   * ```jsx
-   * dateAdapter={new AdapterDateFns({ locale: ruLocale })}
-   * ```
+   * The components used for each slot.
+   * Either a string to use a HTML element or a component.
+   * @default {}
    */
-  dateAdapter: PropTypes.object,
+  components: PropTypes.shape({
+    LeftArrowButton: PropTypes.elementType,
+    LeftArrowIcon: PropTypes.elementType,
+    OpenPickerIcon: PropTypes.elementType,
+    RightArrowButton: PropTypes.elementType,
+    RightArrowIcon: PropTypes.elementType,
+    SwitchViewButton: PropTypes.elementType,
+    SwitchViewIcon: PropTypes.elementType,
+  }),
+  /**
+   * The props used for each slot inside.
+   * @default {}
+   */
+  componentsProps: PropTypes.object,
   /**
    * Default calendar month displayed when `value={null}`.
-   * @default `new Date()`
    */
   defaultCalendarMonth: PropTypes.any,
   /**
-   * Props to be passed directly to material-ui [Dialog](https://material-ui.com/components/dialogs)
+   * Props applied to the [`Dialog`](/api/dialog/) element.
    */
   DialogProps: PropTypes.object,
   /**
-   * if `true` after selecting `start` date  calendar will not automatically switch to the month of `end` date
+   * If `true`, after selecting `start` date calendar will not automatically switch to the month of `end` date.
    * @default false
    */
   disableAutoMonthSwitching: PropTypes.bool,
@@ -83,7 +262,6 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   disabled: PropTypes.bool,
   /**
-   * Disable future dates.
    * @default false
    */
   disableFuture: PropTypes.bool,
@@ -103,13 +281,12 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   disableOpenPicker: PropTypes.bool,
   /**
-   * Disable past dates.
    * @default false
    */
   disablePast: PropTypes.bool,
   /**
    * Text for end input label and toolbar placeholder.
-   * @default "end"
+   * @default 'End'
    */
   endText: PropTypes.node,
   /**
@@ -138,6 +315,15 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   InputProps: PropTypes.object,
   /**
+   * Pass a ref to the `input` element.
+   */
+  inputRef: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({
+      current: PropTypes.object,
+    }),
+  ]),
+  /**
    * @ignore
    */
   key: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -146,17 +332,9 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   label: PropTypes.node,
   /**
-   * Props to pass to left arrow button.
-   */
-  leftArrowButtonProps: PropTypes.object,
-  /**
    * Left arrow icon aria-label text.
    */
   leftArrowButtonText: PropTypes.string,
-  /**
-   * Left arrow icon.
-   */
-  leftArrowIcon: PropTypes.node,
   /**
    * If `true` renders `LoadingComponent` in calendar instead of calendar view.
    * Can be used to preload information and show it in calendar.
@@ -164,22 +342,23 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   loading: PropTypes.bool,
   /**
-   * Custom mask. Can be used to override generate from format. (e.g. __/__/____ __:__ or __/__/____ __:__ _M)
+   * Custom mask. Can be used to override generate from format. (e.g. `__/__/____ __:__` or `__/__/____ __:__ _M`).
+   * @default '__/__/____'
    */
   mask: PropTypes.string,
   /**
    * Max selectable date. @DateIOType
-   * @default Date(2099-31-12)
+   * @default defaultMaxDate
    */
   maxDate: PropTypes.any,
   /**
    * Min selectable date. @DateIOType
-   * @default Date(1900-01-01)
+   * @default defaultMinDate
    */
   minDate: PropTypes.any,
   /**
-   * "OK" button text.
-   * @default "OK"
+   * Ok button text.
+   * @default 'OK'
    */
   okText: PropTypes.node,
   /**
@@ -187,7 +366,7 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   onAccept: PropTypes.func,
   /**
-   * Callback fired when the value (the selected date) changes. @DateIOType.
+   * Callback fired when the value (the selected date range) changes @DateIOType.
    */
   onChange: PropTypes.func.isRequired,
   /**
@@ -226,10 +405,6 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   OpenPickerButtonProps: PropTypes.object,
   /**
-   * Icon displaying for open picker button.
-   */
-  openPickerIcon: PropTypes.node,
-  /**
    * Force rendering in particular orientation.
    */
   orientation: PropTypes.oneOf(['landscape', 'portrait']),
@@ -239,12 +414,12 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
   readOnly: PropTypes.bool,
   /**
    * Disable heavy animations.
-   * @default /(android)/i.test(window.navigator.userAgent).
+   * @default typeof navigator !== 'undefined' && /(android)/i.test(navigator.userAgent)
    */
   reduceAnimations: PropTypes.bool,
   /**
    * Custom renderer for `<DateRangePicker />` days. @DateIOType
-   * @example (date, DateRangeDayProps) => <DateRangePickerDay {...DateRangeDayProps} />
+   * @example (date, dateRangePickerDayProps) => <DateRangePickerDay {...dateRangePickerDayProps} />
    */
   renderDay: PropTypes.func,
   /**
@@ -258,7 +433,7 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    *  renderInput={(startProps, endProps) => (
    *   <React.Fragment>
    *     <TextField {...startProps} />
-   *     <DateRangeDelimiter> to <DateRangeDelimiter>
+   *     <Box sx={{ mx: 2 }}> to </Box>
    *     <TextField {...endProps} />
    *   </React.Fragment>;
    *  )}
@@ -268,7 +443,7 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
   renderInput: PropTypes.func.isRequired,
   /**
    * Component displaying when passed `loading` true.
-   * @default () => "..."
+   * @default () => <span data-mui-test="loading-progress">...</span>
    */
   renderLoading: PropTypes.func,
   /**
@@ -276,24 +451,16 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   rifmFormatter: PropTypes.func,
   /**
-   * Props to pass to right arrow button.
-   */
-  rightArrowButtonProps: PropTypes.object,
-  /**
    * Right arrow icon aria-label text.
    */
   rightArrowButtonText: PropTypes.string,
-  /**
-   * Right arrow icon.
-   */
-  rightArrowIcon: PropTypes.node,
   /**
    * Disable specific date. @DateIOType
    */
   shouldDisableDate: PropTypes.func,
   /**
    * Disable specific years dynamically.
-   * Works like `shouldDisableDate` but for year selection view. @DateIOType.
+   * Works like `shouldDisableDate` but for year selection view @DateIOType.
    */
   shouldDisableYear: PropTypes.func,
   /**
@@ -302,7 +469,7 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
    */
   showDaysOutsideCurrentMonth: PropTypes.bool,
   /**
-   * If `true`, the today button will be displayed. **Note** that `showClearButton` has a higher priority.
+   * If `true`, the today button is displayed. **Note** that `showClearButton` has a higher priority.
    * @default false
    */
   showTodayButton: PropTypes.bool,
@@ -312,12 +479,12 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
   showToolbar: PropTypes.bool,
   /**
    * Text for start input label and toolbar placeholder.
-   * @default "Start"
+   * @default 'Start'
    */
   startText: PropTypes.node,
   /**
-   * "TODAY" Text message
-   * @default "TODAY"
+   * Today text message.
+   * @default 'Today'
    */
   todayText: PropTypes.node,
   /**
@@ -330,16 +497,16 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
   toolbarFormat: PropTypes.string,
   /**
    * Mobile picker date value placeholder, displaying if `value` === `null`.
-   * @default "–"
+   * @default '–'
    */
   toolbarPlaceholder: PropTypes.node,
   /**
    * Mobile picker title, displaying in the toolbar.
-   * @default "SELECT DATE"
+   * @default 'Select date range'
    */
   toolbarTitle: PropTypes.node,
   /**
-   * The value of the picker.
+   * The value of the date range picker.
    */
   value: PropTypes.arrayOf(
     PropTypes.oneOfType([
@@ -349,8 +516,6 @@ const MobileDateRangePicker = makeDateRangePicker('MuiPickersDateRangePicker', M
       PropTypes.string,
     ]),
   ).isRequired,
-};
-
-export type MobileDateRangePickerProps = React.ComponentProps<typeof MobileDateRangePicker>;
+} as any;
 
 export default MobileDateRangePicker;

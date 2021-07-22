@@ -2,8 +2,13 @@
 import { expect } from 'chai';
 import * as React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
+import createMount from './createMount';
 import findOutermostIntrinsic from './findOutermostIntrinsic';
 
+/**
+ * @param {object} node
+ * @returns
+ */
 function assertDOMNode(node) {
   // duck typing a DOM node
   expect(typeof node.nodeName).to.equal('string');
@@ -13,9 +18,8 @@ function assertDOMNode(node) {
  * Utility method to make assertions about the ref on an element
  * @param {React.ReactElement} element - The element should have a component wrapped
  *                                       in withStyles as the root
- * @param {function} mount - Should be returnvalue of createMount
- * @param {function} onRef - Callback, first arg is the ref.
- *                           Assert that the ref is a DOM node by default
+ * @param {(node: React.ReactNode) => import('enzyme').ReactWrapper} mount - Should be returnvalue of createMount
+ * @param {(instance: unknown, wrapper: import('enzyme').ReactWrapper) => void} onRef - Asserts that the ref is a DOM node by default
  */
 function testRef(element, mount, onRef = assertDOMNode) {
   const ref = React.createRef();
@@ -37,7 +41,7 @@ function testRef(element, mount, onRef = assertDOMNode) {
  * the outermost host
  * @param {import('enzyme').ReactWrapper} wrapper
  * @param {object} options
- * @param {import('react').ElementType} component
+ * @param {import('react').ElementType} options.component
  */
 export function findRootComponent(wrapper, { component }) {
   const outermostHostElement = findOutermostIntrinsic(wrapper).getElement();
@@ -47,7 +51,7 @@ export function findRootComponent(wrapper, { component }) {
   });
 }
 
-function randomStringValue() {
+export function randomStringValue() {
   return `s${Math.random().toString(36).slice(2)}`;
 }
 
@@ -64,10 +68,7 @@ export function testClassName(element, getOptions) {
 
     const wrapper = mount(React.cloneElement(element, { className }));
 
-    expect(findOutermostIntrinsic(wrapper).hasClass(className)).to.equal(
-      true,
-      'does have a custom `className`',
-    );
+    expect(findOutermostIntrinsic(wrapper).instance()).to.have.class(className);
   });
 }
 
@@ -77,7 +78,7 @@ export function testClassName(element, getOptions) {
  * @param {React.ReactElement} element
  * @param {() => ConformanceOptions} getOptions
  */
-function testComponentProp(element, getOptions) {
+export function testComponentProp(element, getOptions) {
   describe('prop: component', () => {
     it('can render another root component with the `component` prop', () => {
       const { mount, testComponentPropWith: component = 'em' } = getOptions();
@@ -91,21 +92,26 @@ function testComponentProp(element, getOptions) {
 
 /**
  * Material-UI components can spread additional props to a documented component.
- * It's set via @inheritComponent in the source.
  * @param {React.ReactElement} element
  * @param {() => ConformanceOptions} getOptions
  */
 export function testPropsSpread(element, getOptions) {
   it(`spreads props to the root component`, () => {
     // type def in ConformanceOptions
-    const { classes, inheritComponent, mount } = getOptions();
+    const { inheritComponent, mount } = getOptions();
+    if (inheritComponent === undefined) {
+      throw new TypeError(
+        'Unable to test props spread without `inheritComponent`. Either skip the test or pass a React element type.',
+      );
+    }
+
     const testProp = 'data-test-props-spread';
     const value = randomStringValue();
 
     const wrapper = mount(React.cloneElement(element, { [testProp]: value }));
-    const root = findRootComponent(wrapper, { classes, component: inheritComponent });
+    const root = findRootComponent(wrapper, { component: inheritComponent });
 
-    expect(root.props()[testProp]).to.equal(value);
+    expect(root.props()).to.have.property(testProp, value);
   });
 }
 
@@ -126,7 +132,7 @@ export function describeRef(element, getOptions) {
       testRef(element, mount, (instance, wrapper) => {
         expect(instance).to.be.instanceof(refInstanceof);
 
-        if (inheritComponent && instance.nodeType === 1) {
+        if (inheritComponent !== undefined && instance.nodeType === 1) {
           const rootHost = findOutermostIntrinsic(wrapper);
           expect(instance).to.equal(rootHost.instance());
         }
@@ -142,20 +148,26 @@ export function describeRef(element, getOptions) {
  */
 export function testRootClass(element, getOptions) {
   it('applies the root class to the root component if it has this class', () => {
-    const { classes, mount } = getOptions();
+    const { classes, render } = getOptions();
     if (classes.root == null) {
       return;
     }
 
     const className = randomStringValue();
-    const wrapper = mount(React.cloneElement(element, { className }));
+    const { container, setProps } = render(React.cloneElement(element, { className }));
 
     // we established that the root component renders the outermost host previously. We immediately
     // jump to the host component because some components pass the `root` class
     // to the `classes` prop of the root component.
     // https://github.com/mui-org/material-ui/blob/f9896bcd129a1209153106296b3d2487547ba205/packages/material-ui/src/OutlinedInput/OutlinedInput.js#L101
-    expect(findOutermostIntrinsic(wrapper).hasClass(classes.root)).to.equal(true);
-    expect(findOutermostIntrinsic(wrapper).hasClass(className)).to.equal(true);
+    expect(container.firstChild).to.have.class(className);
+    expect(container.firstChild).to.have.class(classes.root);
+    expect(document.querySelectorAll(`.${classes.root}`).length).to.equal(1);
+
+    // Test that classes prop works
+    setProps({ classes: { ...classes, root: `${classes.root} ${className}` } });
+    expect(container.firstChild).to.have.class(className);
+    expect(container.firstChild).not.to.have.attribute('classes');
   });
 }
 
@@ -187,13 +199,15 @@ const fullSuite = {
 
 /**
  * @typedef {Object} ConformanceOptions
+ * @property {() => void} [after]
  * @property {Record<string, string>} classes - `classes` of the component provided by `@material-ui/styles`
- * @property {import('react').ElementType} inheritComponent - The element type that receives spread props.
- * @property {(node: React.ReactNode) => void} mount - Should be a return value from createMount
+ * @property {import('react').ElementType} [inheritComponent] - The element type that receives spread props or `undefined` if props are not spread.
  * @property {Array<keyof typeof fullSuite>} [only] - If specified only run the tests listed
  * @property {any} refInstanceof - `ref` will be an instanceof this constructor.
  * @property {Array<keyof typeof fullSuite>} [skip] - Skip the specified tests
  * @property {string} [testComponentPropWith] - The host component that should be rendered instead.
+ * @property {(mount: (node: React.ReactNode) => import('enzyme').ReactWrapper) => (node: React.ReactNode) => import('enzyme').ReactWrapper} [wrapMount] - You can use this option to mount the component with enzyme in a WrapperComponent. Make sure the returned node corresponds to the input node and not the wrapper component.
+ * @property {(node: React.ReactElement) => import('./createClientRender').MuiRenderResult} [render] - Should be a return value from createClientRender
  */
 
 /**
@@ -203,15 +217,31 @@ const fullSuite = {
  * @param {() => ConformanceOptions} getOptions
  */
 export default function describeConformance(minimalElement, getOptions) {
-  const { after: runAfterHook = () => {}, only = Object.keys(fullSuite), skip = [] } = getOptions();
   describe('Material-UI component API', () => {
+    const {
+      after: runAfterHook = () => {},
+      only = Object.keys(fullSuite),
+      skip = [],
+      wrapMount = (mount) => mount,
+    } = getOptions();
+
+    const baseMount = createMount();
+    const mount = wrapMount(baseMount);
+
     after(runAfterHook);
+
+    function getTestOptions() {
+      return {
+        ...getOptions(),
+        mount,
+      };
+    }
 
     Object.keys(fullSuite)
       .filter((testKey) => only.indexOf(testKey) !== -1 && skip.indexOf(testKey) === -1)
       .forEach((testKey) => {
         const test = fullSuite[testKey];
-        test(minimalElement, getOptions);
+        test(minimalElement, getTestOptions);
       });
   });
 }

@@ -7,7 +7,7 @@ waiAria: 'https://www.w3.org/WAI/tutorials/forms/custom-controls/#a-star-rating'
 
 # Avaliação
 
-<p class="description">As avaliações fornecem informações sobre as opiniões e experiências dos outros e podem permitir que o usuário envie sua avaliação própria.</p>
+<p class="description">Avaliações fornecem informações sobre as opiniões e experiências dos outros e permitem que o usuário envie sua própria avaliação.</p>
 
 {{"component": "modules/components/ComponentLinkHeader.js"}}
 
@@ -35,9 +35,15 @@ Para avaliações maiores ou menores use a propriedade `size`.
 
 ## Avaliação customizada
 
-Aqui estão alguns exemplos de customização do componente. Você pode aprender mais sobre isso na [página de documentação de sobrescritas](/customization/components/).
+Aqui estão alguns exemplos de customização do componente. Você pode aprender mais sobre isso na [página de documentação de sobrescritas](/customization/how-to-customize/).
 
 {{"demo": "pages/components/rating/CustomizedRating.js"}}
+
+## Radio group
+
+The rating is implemented with a radio group, set `highlightSelectedOnly` to restore the natural behavior.
+
+{{"demo": "pages/components/rating/RadioGroupRating.js"}}
 
 ## Acessibilidade
 

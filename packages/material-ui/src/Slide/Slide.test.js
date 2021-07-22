@@ -1,15 +1,16 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import { spy, stub, useFakeTimers } from 'sinon';
-import { createClientRender, createMount, describeConformance } from 'test/utils';
-import { createMuiTheme } from '@material-ui/core/styles';
+import { act, createClientRender, describeConformance } from 'test/utils';
+import { createTheme } from '@material-ui/core/styles';
 import { Transition } from 'react-transition-group';
-import Slide, { setTranslateValue } from './Slide';
+import Slide from '@material-ui/core/Slide';
+import { setTranslateValue } from './Slide';
 import { useForkRef } from '../utils';
 
 describe('<Slide />', () => {
   const render = createClientRender();
-  const mount = createMount({ strict: true });
+
   const defaultProps = {
     in: true,
     children: <div id="testChild" />,
@@ -23,7 +24,6 @@ describe('<Slide />', () => {
     () => ({
       classes: {},
       inheritComponent: Transition,
-      mount,
       refInstanceof: window.HTMLDivElement,
       skip: [
         'componentProp',
@@ -38,7 +38,7 @@ describe('<Slide />', () => {
       <Slide
         {...defaultProps}
         style={{ color: 'red', backgroundColor: 'yellow' }}
-        theme={createMuiTheme()}
+        theme={createTheme()}
       >
         <div id="with-slide" style={{ color: 'blue' }} />
       </Slide>,
@@ -98,7 +98,9 @@ describe('<Slide />', () => {
       expect(handleEntering.callCount).to.equal(1);
       expect(handleEntering.args[0][0]).to.equal(child);
 
-      clock.tick(1000);
+      act(() => {
+        clock.tick(1000);
+      });
       expect(handleEntered.callCount).to.equal(1);
 
       setProps({ in: false });
@@ -109,14 +111,16 @@ describe('<Slide />', () => {
       expect(handleExiting.callCount).to.equal(1);
       expect(handleExiting.args[0][0]).to.equal(child);
 
-      clock.tick(1000);
+      act(() => {
+        clock.tick(1000);
+      });
       expect(handleExited.callCount).to.equal(1);
       expect(handleExited.args[0][0]).to.equal(child);
     });
   });
 
   describe('prop: timeout', () => {
-    it('should create proper easeOut animation onEntering', () => {
+    it('should create proper enter animation onEntering', () => {
       const handleEntering = spy();
 
       render(
@@ -134,7 +138,7 @@ describe('<Slide />', () => {
       );
     });
 
-    it('should create proper sharp animation onExit', () => {
+    it('should create proper exit animation', () => {
       const handleExit = spy();
       const { setProps } = render(
         <Slide
@@ -154,6 +158,45 @@ describe('<Slide />', () => {
     });
   });
 
+  describe('prop: easing', () => {
+    it('should create proper enter animation', () => {
+      const handleEntering = spy();
+
+      render(
+        <Slide
+          {...defaultProps}
+          easing={{
+            enter: 'cubic-bezier(1, 1, 0, 0)',
+          }}
+          onEntering={handleEntering}
+        />,
+      );
+
+      expect(handleEntering.args[0][0].style.transition).to.match(
+        /transform 225ms cubic-bezier\(1, 1, 0, 0\)( 0ms)?/,
+      );
+    });
+
+    it('should create proper exit animation', () => {
+      const handleExit = spy();
+      const { setProps } = render(
+        <Slide
+          {...defaultProps}
+          easing={{
+            exit: 'cubic-bezier(0, 0, 1, 1)',
+          }}
+          onExit={handleExit}
+        />,
+      );
+
+      setProps({ in: false });
+
+      expect(handleExit.args[0][0].style.transition).to.match(
+        /transform 195ms cubic-bezier\(0, 0, 1, 1\)( 0ms)?/,
+      );
+    });
+  });
+
   describe('prop: direction', () => {
     it('should update the position', () => {
       const { container, setProps } = render(
@@ -167,7 +210,7 @@ describe('<Slide />', () => {
       });
 
       const transition2 = child.style.transform;
-      expect(transition1).to.not.equal(transition2);
+      expect(transition1).not.to.equal(transition2);
     });
   });
 
@@ -429,7 +472,7 @@ describe('<Slide />', () => {
       const transition = childRef.current;
 
       expect(transition.style.visibility).to.equal('hidden');
-      expect(transition.style.transform).to.not.equal(undefined);
+      expect(transition.style.transform).not.to.equal(undefined);
     });
   });
 
@@ -451,11 +494,13 @@ describe('<Slide />', () => {
         </Slide>,
       );
 
-      window.dispatchEvent(new window.Event('resize', {}));
-      clock.tick(166);
-      const child = container.querySelector('#testChild');
+      act(() => {
+        window.dispatchEvent(new window.Event('resize', {}));
+        clock.tick(166);
+      });
 
-      expect(child.style.transform).to.not.equal(undefined);
+      const child = container.querySelector('#testChild');
+      expect(child.style.transform).not.to.equal(undefined);
     });
 
     it('should take existing transform into account', () => {
@@ -479,8 +524,10 @@ describe('<Slide />', () => {
 
     it('should do nothing when visible', () => {
       render(<Slide {...defaultProps} />);
-      window.dispatchEvent(new window.Event('resize', {}));
-      clock.tick(166);
+      act(() => {
+        window.dispatchEvent(new window.Event('resize', {}));
+        clock.tick(166);
+      });
     });
   });
 

@@ -38,18 +38,29 @@ interface PickerRenderOptions {
   locale?: string | object;
 }
 
+export function wrapPickerMount(mount: (node: React.ReactNode) => import('enzyme').ReactWrapper) {
+  return (node: React.ReactNode) =>
+    mount(<LocalizationProvider dateAdapter={AdapterClassToUse}>{node}</LocalizationProvider>);
+}
+
 export function createPickerRender({
   locale,
   ...renderOptions
-}: PickerRenderOptions & import('test/utils').RenderOptions) {
+}: PickerRenderOptions & import('test/utils').RenderOptions = {}) {
   const clientRender = createClientRender(renderOptions);
 
-  return (node: React.ReactNode) =>
-    clientRender(
+  function Wrapper({ children }: { children?: React.ReactNode }) {
+    return (
       <LocalizationProvider locale={locale} dateAdapter={AdapterClassToUse}>
-        {node}
-      </LocalizationProvider>,
+        {children}
+      </LocalizationProvider>
     );
+  }
+
+  return (
+    node: React.ReactElement,
+    options?: Omit<import('test/utils').RenderOptions, 'wrapper'>,
+  ) => clientRender(node, { ...options, wrapper: Wrapper });
 }
 
 export const queryByMuiTest = queryHelpers.queryByAttribute.bind(null, 'data-mui-test');
@@ -80,10 +91,6 @@ export function getByMuiTest(...args: Parameters<typeof getAllByMuiTest>): Eleme
     `Unable to find an element by: [data-mui-test="${args[0]}"]`,
     document.body,
   );
-}
-
-export function openDesktopPicker() {
-  fireEvent.click(screen.getByLabelText(/choose date/i));
 }
 
 export function openMobilePicker() {

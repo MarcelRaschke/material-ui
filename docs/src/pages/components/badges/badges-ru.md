@@ -1,6 +1,6 @@
 ---
 title: Компонент React Badge
-components: Badge
+components: Badge, BadgeUnstyled
 githubLabel: 'component: Badge'
 ---
 
@@ -18,7 +18,7 @@ githubLabel: 'component: Badge'
 
 ## Настраиваемые значки
 
-Ниже находится пример кастомизации компонента. You can learn more about this in the [overrides documentation page](/customization/components/).
+Ниже находится пример кастомизации компонента. You can learn more about this in the [overrides documentation page](/customization/how-to-customize/).
 
 {{"demo": "pages/components/badges/CustomizedBadges.js"}}
 
@@ -56,6 +56,18 @@ githubLabel: 'component: Badge'
 
 {{"demo": "pages/components/badges/BadgeAlignment.js", "hideToolbar": true}}
 
-## Unstyled badge
+## Unstyled
+
+The badge also comes with an unstyled version. It's ideal for doing heavy customizations and minimizing bundle size.
+
+```js
+import BadgeUnstyled from '@material-ui/unstyled/BadgeUnstyled';
+```
 
 {{"demo": "pages/components/badges/UnstyledBadge.js"}}
+
+## Доступность
+
+You can't rely on the content of the badge to be announced correctly. You should provide a full description, for instance, with `aria-label`:
+
+{{"demo": "pages/components/badges/AccessibleBadges.js"}}

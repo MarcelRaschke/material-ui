@@ -1,16 +1,14 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import { spy } from 'sinon';
-import { getClasses, createMount, describeConformance, act, createClientRender } from 'test/utils';
-import Input from '../Input';
-import Select from '../Select';
-import FormControl from './FormControl';
+import { describeConformanceV5, act, createClientRender } from 'test/utils';
+import FormControl, { formControlClasses as classes } from '@material-ui/core/FormControl';
+import Input from '@material-ui/core/Input';
+import Select from '@material-ui/core/Select';
 import useFormControl from './useFormControl';
 
 describe('<FormControl />', () => {
-  const mount = createMount();
   const render = createClientRender();
-  let classes;
 
   function TestComponent(props) {
     const context = useFormControl();
@@ -20,16 +18,15 @@ describe('<FormControl />', () => {
     return null;
   }
 
-  before(() => {
-    classes = getClasses(<FormControl />);
-  });
-
-  describeConformance(<FormControl />, () => ({
+  describeConformanceV5(<FormControl />, () => ({
     classes,
     inheritComponent: 'div',
-    mount,
+    render,
     refInstanceof: window.HTMLDivElement,
     testComponentPropWith: 'fieldset',
+    muiName: 'MuiFormControl',
+    testVariantProps: { margin: 'dense' },
+    skip: ['componentsProp'],
   }));
 
   describe('initial state', () => {
@@ -99,10 +96,10 @@ describe('<FormControl />', () => {
       act(() => {
         container.querySelector('input').focus();
       });
-      expect(readContext.args[1][0]).to.have.property('focused', true);
+      expect(readContext.lastCall.args[0]).to.have.property('focused', true);
 
       setProps({ disabled: true });
-      expect(readContext.args[2][0]).to.have.property('focused', false);
+      expect(readContext.lastCall.args[0]).to.have.property('focused', false);
     });
   });
 
@@ -119,6 +116,17 @@ describe('<FormControl />', () => {
       expect(readContext.args[0][0]).to.have.property('focused', true);
       container.querySelector('input').blur();
       expect(readContext.args[0][0]).to.have.property('focused', true);
+    });
+
+    it('ignores focused when disabled', () => {
+      const readContext = spy();
+      render(
+        <FormControl focused disabled>
+          <Input />
+          <TestComponent contextCallback={readContext} />
+        </FormControl>,
+      );
+      expect(readContext.args[0][0]).to.include({ disabled: true, focused: false });
     });
   });
 

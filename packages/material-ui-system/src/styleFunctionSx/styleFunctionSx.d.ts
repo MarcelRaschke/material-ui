@@ -26,13 +26,13 @@ export interface CSSSelectorObject<Theme extends object = {}> {
 
 /**
  * Map of all available CSS properties (including aliases) and their raw value.
- * Only used internally to map CCS properties to input types (responsive value,
+ * Only used internally to map CSS properties to input types (responsive value,
  * theme function or nested) in `SystemCssProperties`.
  */
 export interface AllSystemCSSProperties
   extends Omit<StandardCSSProperties, keyof OverwriteCSSProperties>,
-    AliasesCSSProperties,
-    OverwriteCSSProperties {}
+    OverwriteCSSProperties,
+    AliasesCSSProperties {}
 
 export type SystemCssProperties<Theme extends object = {}> = {
   [K in keyof AllSystemCSSProperties]:
@@ -55,6 +55,3 @@ export type SxProps<Theme extends object = {}> = SystemStyleObject<Theme>;
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export default function unstable_styleFunctionSx(props: object): object;
-
-// utils
-export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;

@@ -1,34 +1,28 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import {
-  getClasses,
-  describeConformance,
+  describeConformanceV5,
   createClientRender,
-  createMount,
   createServerRender,
   act,
   fireEvent,
 } from 'test/utils';
-import Fab from './Fab';
-import ButtonBase from '../ButtonBase';
-import Icon from '../Icon';
-import TouchRipple from '../ButtonBase/TouchRipple';
+import Fab, { fabClasses as classes } from '@material-ui/core/Fab';
+import ButtonBase, { touchRippleClasses } from '@material-ui/core/ButtonBase';
+import Icon from '@material-ui/core/Icon';
 
 describe('<Fab />', () => {
-  const mount = createMount();
-  const render = createClientRender({ strict: false });
-  let classes;
+  const render = createClientRender();
 
-  before(() => {
-    classes = getClasses(<Fab>Fab</Fab>);
-  });
-
-  describeConformance(<Fab>Conformance?</Fab>, () => ({
+  describeConformanceV5(<Fab>Conformance?</Fab>, () => ({
     classes,
     inheritComponent: ButtonBase,
-    mount,
+    render,
+    muiName: 'MuiFab',
+    testVariantProps: { variant: 'extended' },
+    testStateOverrides: { prop: 'size', value: 'small', styleKey: 'sizeSmall' },
     refInstanceof: window.HTMLButtonElement,
-    skip: ['componentProp'],
+    skip: ['componentsProp'],
   }));
 
   it('should render with the root class but no others', () => {
@@ -92,14 +86,12 @@ describe('<Fab />', () => {
   });
 
   it('should have a ripple by default', () => {
-    const touchRippleClasses = getClasses(<TouchRipple />);
     const { container } = render(<Fab>Fab</Fab>);
 
     expect(container.querySelector(`.${touchRippleClasses.root}`)).not.to.equal(null);
   });
 
   it('should pass disableRipple to ButtonBase', () => {
-    const touchRippleClasses = getClasses(<TouchRipple />);
     const { container } = render(<Fab disableRipple>Fab</Fab>);
 
     expect(container.querySelector(`.${touchRippleClasses.root}`)).to.equal(null);
@@ -167,8 +159,8 @@ describe('<Fab />', () => {
     });
 
     it('should server-side render', () => {
-      const markup = serverRender(<Fab>Fab</Fab>);
-      expect(markup.text()).to.equal('Fab');
+      const container = serverRender(<Fab>Fab</Fab>);
+      expect(container.firstChild).to.have.text('Fab');
     });
   });
 });

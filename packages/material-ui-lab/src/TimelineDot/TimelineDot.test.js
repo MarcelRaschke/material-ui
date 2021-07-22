@@ -1,20 +1,17 @@
 import * as React from 'react';
-import { getClasses, createMount, describeConformance } from 'test/utils';
-import TimelineDot from './TimelineDot';
+import { createClientRender, describeConformanceV5 } from 'test/utils';
+import TimelineDot, { timelineDotClasses as classes } from '@material-ui/lab/TimelineDot';
 
 describe('<TimelineDot />', () => {
-  const mount = createMount();
-  let classes;
+  const render = createClientRender();
 
-  before(() => {
-    classes = getClasses(<TimelineDot />);
-  });
-
-  describeConformance(<TimelineDot />, () => ({
+  describeConformanceV5(<TimelineDot />, () => ({
     classes,
     inheritComponent: 'span',
-    mount,
+    render,
+    muiName: 'MuiTimelineDot',
     refInstanceof: window.HTMLSpanElement,
-    skip: ['componentProp'],
+    testVariantProps: { color: 'secondary', variant: 'outlined' },
+    skip: ['componentProp', 'componentsProp'],
   }));
 });

@@ -1,20 +1,18 @@
 import * as React from 'react';
-import { getClasses, createMount, describeConformance } from 'test/utils';
-import TimelineConnector from './TimelineConnector';
+import { createClientRender, describeConformanceV5 } from 'test/utils';
+import TimelineConnector, {
+  timelineConnectorClasses as classes,
+} from '@material-ui/lab/TimelineConnector';
 
 describe('<TimelineConnector />', () => {
-  const mount = createMount();
-  let classes;
+  const render = createClientRender();
 
-  before(() => {
-    classes = getClasses(<TimelineConnector />);
-  });
-
-  describeConformance(<TimelineConnector />, () => ({
+  describeConformanceV5(<TimelineConnector />, () => ({
     classes,
     inheritComponent: 'span',
-    mount,
+    render,
+    muiName: 'MuiTimelineConnector',
     refInstanceof: window.HTMLSpanElement,
-    skip: ['componentProp'],
+    skip: ['componentProp', 'componentsProp', 'themeVariants'],
   }));
 });

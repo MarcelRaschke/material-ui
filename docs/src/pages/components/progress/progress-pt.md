@@ -24,6 +24,10 @@ Indicador **determinado** mostra quanto tempo uma operação vai demorar.
 
 {{"demo": "pages/components/progress/CircularIndeterminate.js"}}
 
+### Circular color
+
+{{"demo": "pages/components/progress/CircularColor.js"}}
+
 ### Circular determinado
 
 {{"demo": "pages/components/progress/CircularDeterminate.js"}}
@@ -41,6 +45,10 @@ Indicador **determinado** mostra quanto tempo uma operação vai demorar.
 ### Linear indeterminado
 
 {{"demo": "pages/components/progress/LinearIndeterminate.js"}}
+
+### Linear color
+
+{{"demo": "pages/components/progress/LinearColor.js"}}
 
 ### Linear determinado
 
@@ -77,7 +85,7 @@ function Progress(props) {
 
 ## Progresso customizado
 
-Aqui estão alguns exemplos de customização do componente. Você pode aprender mais sobre isso na [página de documentação de sobrescritas](/customization/components/).
+Aqui estão alguns exemplos de customização do componente. Você pode aprender mais sobre isso na [página de documentação de sobrescritas](/customization/how-to-customize/).
 
 {{"demo": "pages/components/progress/CustomizedProgressBars.js", "defaultCodeOpen": false}}
 
@@ -109,12 +117,12 @@ Se você precisar executar 30 renderizações por segundo ou mais, recomendamos 
 Indicadores de <a href="https://material.io/design/components/progress-indicators.html#linear-progress-indicators">progresso linear</a>.
 ```
 
-### IE11
+### IE 11
 
-A animação do componente de progresso circular no IE11 é degradada. A animação do traço não está funcionando (equivalente a `disableShrink`) e a animação circular oscila. Você pode resolver o último com:
+The circular progress component animation on IE 11 is degraded. A animação do traço não está funcionando (equivalente a `disableShrink`) e a animação circular oscila. Você pode resolver o último com:
 
 ```css
-.MuiCircularProgress-indeterminate {
+. MuiCircularProgress-indeterminate {
   animation: circular-rotate 1.4s linear infinite;
 }
 

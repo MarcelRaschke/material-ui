@@ -1,22 +1,19 @@
 import * as React from 'react';
 import { expect } from 'chai';
-import { getClasses, createMount, describeConformance, createClientRender } from 'test/utils';
-import ListSubheader from './ListSubheader';
+import { describeConformanceV5, createClientRender } from 'test/utils';
+import ListSubheader, { listSubheaderClasses as classes } from '@material-ui/core/ListSubheader';
 
 describe('<ListSubheader />', () => {
-  const mount = createMount();
   const render = createClientRender();
-  let classes;
 
-  before(() => {
-    classes = getClasses(<ListSubheader />);
-  });
-
-  describeConformance(<ListSubheader />, () => ({
+  describeConformanceV5(<ListSubheader />, () => ({
     classes,
     inheritComponent: 'li',
-    mount,
+    render,
+    muiName: 'MuiListSubheader',
     refInstanceof: window.HTMLLIElement,
+    testVariantProps: { disableGutters: true },
+    skip: ['componentsProp'],
   }));
 
   it('should display primary color', () => {
@@ -43,7 +40,7 @@ describe('<ListSubheader />', () => {
     it('should not display sticky class', () => {
       const { container } = render(<ListSubheader disableSticky />);
 
-      expect(container.firstChild).to.not.have.class(classes.sticky);
+      expect(container.firstChild).not.to.have.class(classes.sticky);
     });
   });
 
@@ -51,7 +48,7 @@ describe('<ListSubheader />', () => {
     it('should not display gutters class', () => {
       const { container } = render(<ListSubheader disableGutters />);
 
-      expect(container.firstChild).to.not.have.class(classes.gutters);
+      expect(container.firstChild).not.to.have.class(classes.gutters);
     });
 
     it('should display gutters class', () => {

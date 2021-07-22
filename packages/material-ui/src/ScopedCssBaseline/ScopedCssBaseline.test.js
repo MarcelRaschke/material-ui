@@ -1,20 +1,19 @@
 import * as React from 'react';
-import { getClasses, createMount, describeConformance } from 'test/utils';
-import ScopedCssBaseline from './ScopedCssBaseline';
+import { describeConformanceV5, createClientRender } from 'test/utils';
+import ScopedCssBaseline, {
+  scopedCssBaselineClasses as classes,
+} from '@material-ui/core/ScopedCssBaseline';
 
 describe('<ScopedCssBaseline />', () => {
-  const mount = createMount();
-  let classes;
+  const render = createClientRender();
 
-  before(() => {
-    classes = getClasses(<ScopedCssBaseline />);
-  });
-
-  describeConformance(<ScopedCssBaseline />, () => ({
+  describeConformanceV5(<ScopedCssBaseline />, () => ({
     classes,
     inheritComponent: 'div',
-    mount,
+    render,
+    muiName: 'MuiScopedCssBaseline',
     refInstanceof: window.HTMLDivElement,
-    skip: ['componentProp'],
+    testComponentPropWith: 'span',
+    skip: ['componentsProp', 'themeVariants'],
   }));
 });

@@ -1,18 +1,11 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import PropTypes from 'prop-types';
-import {
-  getClasses,
-  createMount,
-  describeConformance,
-  act,
-  createClientRender,
-  fireEvent,
-  queries,
-} from 'test/utils';
-import ListItemText from '../ListItemText';
-import ListItemSecondaryAction from '../ListItemSecondaryAction';
-import ListItem from './ListItem';
+import { describeConformanceV5, act, createClientRender, fireEvent, queries } from 'test/utils';
+import { ThemeProvider, createTheme } from '@material-ui/core/styles';
+import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import ListItem, { listItemClasses as classes } from '@material-ui/core/ListItem';
 import ListContext from '../List/ListContext';
 
 const NoContent = React.forwardRef(() => {
@@ -20,19 +13,16 @@ const NoContent = React.forwardRef(() => {
 });
 
 describe('<ListItem />', () => {
-  const mount = createMount({ strict: true });
   const render = createClientRender();
-  let classes;
 
-  before(() => {
-    classes = getClasses(<ListItem />);
-  });
-
-  describeConformance(<ListItem />, () => ({
+  describeConformanceV5(<ListItem />, () => ({
     classes,
     inheritComponent: 'li',
-    mount,
+    render,
     refInstanceof: window.HTMLLIElement,
+    muiName: 'MuiListItem',
+    testVariantProps: { dense: true },
+    skip: ['componentsProp'],
   }));
 
   it('should render with gutters classes', () => {
@@ -75,6 +65,14 @@ describe('<ListItem />', () => {
     });
   });
 
+  describe('action', () => {
+    it('should show action if provided', () => {
+      const { getByText } = render(<ListItem secondaryAction="foo" />);
+      expect(getByText('foo')).toBeVisible();
+    });
+  });
+
+  // TODO remove in v6 in favor of ListItemButton
   describe('secondary action', () => {
     it('should wrap with a container', () => {
       const { getByRole } = render(
@@ -165,7 +163,7 @@ describe('<ListItem />', () => {
       it('warns if it cant detect the secondary action properly', () => {
         expect(() => {
           PropTypes.checkPropTypes(
-            ListItem.Naked.propTypes,
+            ListItem.propTypes,
             {
               classes: {},
               children: [
@@ -182,13 +180,17 @@ describe('<ListItem />', () => {
       it('should warn (but not error) with autoFocus with a function component with no content', () => {
         expect(() => {
           render(<ListItem component={NoContent} autoFocus />);
-        }).toErrorDev(
+        }).toErrorDev([
           'Material-UI: Unable to set focus to a ListItem whose component has not been rendered.',
-        );
+          // React 18 Strict Effects run mount effects twice
+          React.version.startsWith('18') &&
+            'Material-UI: Unable to set focus to a ListItem whose component has not been rendered.',
+        ]);
       });
     });
   });
 
+  // TODO remove in v6 in favor of ListItemButton
   describe('prop: focusVisibleClassName', () => {
     it('should merge the class names', () => {
       const { getByRole } = render(
@@ -204,5 +206,36 @@ describe('<ListItem />', () => {
       expect(button).to.have.class('focusVisibleClassName');
       expect(button).to.have.class(classes.focusVisible);
     });
+  });
+
+  it('container overrides should work', function test() {
+    if (/jsdom/.test(window.navigator.userAgent)) {
+      this.skip();
+    }
+
+    const testStyle = {
+      marginTop: '13px',
+    };
+
+    const theme = createTheme({
+      components: {
+        MuiListItem: {
+          styleOverrides: {
+            container: testStyle,
+          },
+        },
+      },
+    });
+
+    const { container } = render(
+      <ThemeProvider theme={theme}>
+        <ListItem>
+          Test<ListItemSecondaryAction>SecondaryAction</ListItemSecondaryAction>
+        </ListItem>
+      </ThemeProvider>,
+    );
+
+    const listItemContainer = container.getElementsByClassName(classes.container)[0];
+    expect(listItemContainer).to.toHaveComputedStyle(testStyle);
   });
 });

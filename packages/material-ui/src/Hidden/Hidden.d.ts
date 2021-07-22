@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Breakpoint } from '../styles/createBreakpoints';
+import { Breakpoint } from '@material-ui/system';
 
 export interface HiddenProps {
   /**
@@ -82,6 +82,7 @@ export interface HiddenProps {
 
 /**
  * Responsively hides children based on the selected implementation.
+ *
  * Demos:
  *
  * - [Hidden](https://material-ui.com/components/hidden/)
@@ -90,6 +91,6 @@ export interface HiddenProps {
  *
  * - [Hidden API](https://material-ui.com/api/hidden/)
  */
-declare const Hidden: React.ComponentType<HiddenProps>;
+declare const Hidden: React.JSXElementConstructor<HiddenProps>;
 
 export default Hidden;

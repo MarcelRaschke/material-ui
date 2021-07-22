@@ -1,23 +1,22 @@
-import * as React from 'react';
 import { expect } from 'chai';
-import { createClientRender, getClasses, createMount, describeConformance } from 'test/utils';
-import ImageListItemBar from './ImageListItemBar';
+import * as React from 'react';
+import { createClientRender, describeConformanceV5 } from 'test/utils';
+import ImageListItemBar, {
+  imageListItemBarClasses as classes,
+} from '@material-ui/core/ImageListItemBar';
 
 describe('<ImageListItemBar />', () => {
-  let classes;
-  const mount = createMount();
   const render = createClientRender();
 
-  before(() => {
-    classes = getClasses(<ImageListItemBar title="classes" />);
-  });
-
-  describeConformance(<ImageListItemBar title="conform?" />, () => ({
+  describeConformanceV5(<ImageListItemBar title="conform?" />, () => ({
     classes,
     inheritComponent: 'div',
-    mount,
+    render,
     refInstanceof: window.HTMLDivElement,
-    skip: ['componentProp'],
+    muiName: 'MuiImageListItemBar',
+    testDeepOverrides: { slotName: 'titleWrap', slotClassName: classes.titleWrap },
+    testVariantProps: { position: 'top', actionPosition: 'left' },
+    skip: ['componentProp', 'componentsProp'],
   }));
 
   const itemData = {

@@ -2,38 +2,29 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import { expect } from 'chai';
 import { spy } from 'sinon';
-import {
-  createMount,
-  describeConformance,
-  getClasses,
-  createClientRender,
-  fireEvent,
-} from 'test/utils';
-import Paper from '../Paper';
-import Accordion from './Accordion';
-import AccordionSummary from '../AccordionSummary';
+import { describeConformanceV5, createClientRender, fireEvent } from 'test/utils';
+import Accordion, { accordionClasses as classes } from '@material-ui/core/Accordion';
+import Paper from '@material-ui/core/Paper';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 
 describe('<Accordion />', () => {
   const render = createClientRender();
-  const mount = createMount({ strict: true });
-  let classes;
+
   const minimalChildren = [<AccordionSummary key="header">Header</AccordionSummary>];
 
-  before(() => {
-    classes = getClasses(<Accordion>{minimalChildren}</Accordion>);
-  });
-
-  describeConformance(<Accordion>{minimalChildren}</Accordion>, () => ({
+  describeConformanceV5(<Accordion>{minimalChildren}</Accordion>, () => ({
     classes,
     inheritComponent: Paper,
-    mount,
+    render,
     refInstanceof: window.HTMLDivElement,
-    skip: ['componentProp'],
+    muiName: 'MuiAccordion',
+    testVariantProps: { variant: 'rounded' },
+    skip: ['componentProp', 'componentsProp'],
   }));
 
   it('should render and not be controlled', () => {
     const { container } = render(<Accordion>{minimalChildren}</Accordion>);
-    expect(container.firstChild).to.not.have.class(classes.expanded);
+    expect(container.firstChild).not.to.have.class(classes.expanded);
   });
 
   it('should handle defaultExpanded prop', () => {
@@ -57,7 +48,7 @@ describe('<Accordion />', () => {
     const panel = container.firstChild;
     expect(panel).to.have.class(classes.expanded);
     setProps({ expanded: false });
-    expect(panel).to.not.have.class(classes.expanded);
+    expect(panel).not.to.have.class(classes.expanded);
   });
 
   it('should call onChange when clicking the summary element', () => {
@@ -130,7 +121,7 @@ describe('<Accordion />', () => {
       it('requires at least one child', () => {
         expect(() => {
           PropTypes.checkPropTypes(
-            Accordion.Naked.propTypes,
+            Accordion.propTypes,
             { classes: {}, children: [] },
             'prop',
             'MockedName',
@@ -141,7 +132,7 @@ describe('<Accordion />', () => {
       it('needs a valid element as the first child', () => {
         expect(() => {
           PropTypes.checkPropTypes(
-            Accordion.Naked.propTypes,
+            Accordion.propTypes,
             { classes: {}, children: <React.Fragment /> },
             'prop',
             'MockedName',

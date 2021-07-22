@@ -1,30 +1,28 @@
 import * as React from 'react';
 import { expect } from 'chai';
 import { spy, stub, useFakeTimers } from 'sinon';
-import { createClientRender, getClasses, createMount, describeConformance } from 'test/utils';
-import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import { act, createClientRender, describeConformanceV5 } from 'test/utils';
+import { ThemeProvider, createTheme } from '@material-ui/core/styles';
 import { Transition } from 'react-transition-group';
-import Collapse from './Collapse';
+import Collapse, { collapseClasses as classes } from '@material-ui/core/Collapse';
 
 describe('<Collapse />', () => {
-  const mount = createMount({ strict: true });
-  let classes;
+  const render = createClientRender();
+
   const defaultProps = {
     in: true,
     children: <div />,
   };
-  const render = createClientRender();
 
-  before(() => {
-    classes = getClasses(<Collapse {...defaultProps} />);
-  });
-
-  describeConformance(<Collapse {...defaultProps} />, () => ({
+  describeConformanceV5(<Collapse {...defaultProps} />, () => ({
     classes,
     inheritComponent: Transition,
-    mount,
+    render,
     refInstanceof: window.HTMLDivElement,
-    testComponentPropWith: 'span',
+    muiName: 'MuiCollapse',
+    testVariantProps: { orientation: 'horizontal' },
+    testDeepOverrides: { slotName: 'wrapper', slotClassName: classes.wrapper },
+    skip: ['componentsProp'],
   }));
 
   it('should render a container around the wrapper', () => {
@@ -111,7 +109,10 @@ describe('<Collapse />', () => {
       expect(handleEntering.callCount).to.equal(1);
       expect(handleEntering.args[0][0]).to.equal(collapse);
       expect(handleEntering.args[0][1]).to.equal(false);
-      clock.tick(300);
+      act(() => {
+        clock.tick(300);
+      });
+
       expect(handleEntered.args[0][0].style.height).to.equal('auto');
       expect(handleEntered.args[0][1]).to.equal(false);
       expect(handleEntered.callCount).to.equal(1);
@@ -120,13 +121,20 @@ describe('<Collapse />', () => {
     it('should run out', () => {
       setProps({ in: true });
       setProps({ in: false });
+
       expect(nodeExitHeightStyle).to.equal('666px');
       expect(handleExiting.args[0][0].style.height).to.equal('0px');
       expect(handleExiting.callCount).to.equal(1);
       expect(handleExiting.args[0][0]).to.equal(collapse);
-      clock.tick(300);
+      act(() => {
+        clock.tick(300);
+      });
+
       expect(handleExited.args[0][0].style.height).to.equal('0px');
-      clock.tick(300);
+      act(() => {
+        clock.tick(300);
+      });
+
       expect(handleExited.callCount).to.equal(1);
       expect(handleExited.args[0][0]).to.equal(collapse);
     });
@@ -144,7 +152,7 @@ describe('<Collapse />', () => {
     });
 
     it('should delay based on height when timeout is auto', () => {
-      const theme = createMuiTheme({
+      const theme = createTheme({
         transitions: {
           getAutoHeightDuration: (n) => n,
         },
@@ -169,9 +177,15 @@ describe('<Collapse />', () => {
 
       const autoTransitionDuration = 10;
       expect(next1.callCount).to.equal(0);
-      clock.tick(0);
+      act(() => {
+        clock.tick(0);
+      });
+
       expect(next1.callCount).to.equal(0);
-      clock.tick(autoTransitionDuration);
+      act(() => {
+        clock.tick(autoTransitionDuration);
+      });
+
       expect(next1.callCount).to.equal(1);
 
       const next2 = spy();
@@ -183,7 +197,10 @@ describe('<Collapse />', () => {
       renderProps2.setProps({ in: true });
 
       expect(next2.callCount).to.equal(0);
-      clock.tick(0);
+      act(() => {
+        clock.tick(0);
+      });
+
       expect(next2.callCount).to.equal(1);
     });
 
@@ -199,9 +216,15 @@ describe('<Collapse />', () => {
       setProps({ in: true });
 
       expect(next.callCount).to.equal(0);
-      clock.tick(0);
+      act(() => {
+        clock.tick(0);
+      });
+
       expect(next.callCount).to.equal(0);
-      clock.tick(timeout);
+      act(() => {
+        clock.tick(timeout);
+      });
+
       expect(next.callCount).to.equal(1);
     });
 

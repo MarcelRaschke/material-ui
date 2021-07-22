@@ -4,15 +4,15 @@
 
 ## Perguntas Frequentes
 
-### Woah - a API é diferente! Isso significa que 1.0 é completamente diferente, vou ter que aprender o básico de novo, e a migração será praticamente impossível?
+### Woah - a API é diferente! Does that mean 1.0 is completely different, I'll have to learn the basics all over again, and migrating will be practically impossible?
 
-Estou feliz que você tenha perguntado! A resposta é não. Os principais conceitos não mudaram. Você vai notar que a API oferece mais flexibilidade, mas isso tem um custo – componentes de nível inferior que abstraem menos complexidade.
+A resposta é não. I'm glad you asked! The core concepts haven't changed. Você vai notar que a API oferece mais flexibilidade, mas isso tem um custo – componentes de nível inferior que abstraem menos complexidade.
 
 ### O que motivou uma mudança tão grande?
 
 Material-UI foi iniciado [4 anos atrás](https://github.com/mui-org/material-ui/commit/28b768913b75752ecf9b6bb32766e27c241dbc46). O ecossistema evoluiu muito desde então, também aprendemos muito. [@nathanmarks](https://github.com/nathanmarks/) iniciou uma tarefa ambiciosa, reconstruindo o Material-UI do **zero**, aproveitando esse conhecimento para resolver problemas de longa data. Para citar algumas das principais mudanças:
 
-- Nova solução de estilo usando CSS-in-JS (melhor poder de [customização](/customization/components/), melhor desempenho)
+- New styling solution using CSS-in-JS (better [customization](/customization/how-to-customize/) power, better performance)
 - Novo tratamento de tema (aninhamento, auto-suporte, etc.)
 - Documentação rápida e brilhante graças a [Next.js](https://github.com/zeit/next.js)
 - Melhor [cobertura de teste](/guides/testing/) (99%+, executado em todos os principais navegadores, [testes de regressão visual](https://www.argos-ci.com/mui-org/material-ui))
